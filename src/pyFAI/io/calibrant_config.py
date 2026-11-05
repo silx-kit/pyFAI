@@ -45,6 +45,8 @@ from dataclasses import field
 from ..containers import Miller, Reflection, dataclass
 
 logger = logging.getLogger(__name__)
+# Reference temperature (K) of the thermal parameters of JCPDS files, as in Dioptas
+JCPDS_T_REF = 298.0
 
 _CELL_LATTICES = ("cubic", "tetragonal", "hexagonal", "rhombohedral",
                   "orthorhombic", "monoclinic", "triclinic")
@@ -399,8 +401,10 @@ class CalibrantConfig:
 
         The compression parameters (K0, K0P, DK0DT, DK0PDT) and the thermal
         expansion (ALPHAT, DALPHADT) are turned into an EquationOfState
-        instance stored in the ``eos`` attribute: a PVT composite when both
-        are present, the bare model otherwise.
+        instance stored in the ``eos`` attribute: a ThermalPressure composite
+        when both are present, as interpreted by Dioptas (reference
+        temperature of 298 K, thermal pressure added to the isotherm), the
+        bare model otherwise.
 
         The compression model is Birch-Murnaghan, as assumed by the format.
         The optional keyword ``EOS``, an extension of the format specific to
@@ -411,7 +415,7 @@ class CalibrantConfig:
         :return: CalibrantConfig instance
         """
         from ..crystallography.cell import Cell  # lazy loading to prevent cyclic imports
-        from ..crystallography.eos import BirchMurnaghan, EquationOfState, PVT, VolumeExpansion
+        from ..crystallography.eos import BirchMurnaghan, EquationOfState, ThermalPressure, VolumeExpansion
 
         version = None
         symmetry = None
@@ -474,9 +478,9 @@ class CalibrantConfig:
             coefficients = [values["ALPHAT"]]
             if values.get("DALPHADT"):
                 coefficients.append(values["DALPHADT"])
-            thermal = VolumeExpansion(coefficients)
+            thermal = VolumeExpansion(coefficients, t0=JCPDS_T_REF)
         if isothermal and thermal:
-            eos = PVT(isothermal, thermal,
+            eos = ThermalPressure(isothermal, thermal,
                       dk0dt=values.get("DK0DT", 0.0),
                       dk0pdt=values.get("DK0PDT", 0.0),
                       v0=cell.volume)
@@ -498,7 +502,9 @@ class CalibrantConfig:
         Requires a parseable ``cell`` description. The ``eos`` attribute, when
         present, must map onto the JCPDS parametrization: a Birch-Murnaghan
         compression and/or a polynomial volume expansion (possibly combined in
-        a PVT composite); other models raise a ValueError.
+        a ThermalPressure composite); other models raise a ValueError.
+        A PVT composite is exported with a warning: its parameters are
+        interpreted as a ThermalPressure model when read back.
         Vinet and Murnaghan compressions are exported with the keyword ``EOS``,
         an extension of the format specific to pyFAI: other programs (Dioptas)
         ignore it and would interpret the parameters as Birch-Murnaghan ones.
@@ -506,7 +512,7 @@ class CalibrantConfig:
         :return: content of the JCPDS file as a string
         """
         from ..crystallography.eos import (BirchMurnaghan, LatticeExpansion, Murnaghan, PVT,
-                                           ThermalExpansion, Vinet, VolumeExpansion)
+                                           ThermalExpansion, ThermalPressure, Vinet, VolumeExpansion)
 
         lines = ["VERSION: 4"]
         if self.description or self.name:
@@ -515,6 +521,8 @@ class CalibrantConfig:
         isothermal = thermal = None
         dk0dt = dk0pdt = 0.0
         if isinstance(self.eos, PVT):
+            if not isinstance(self.eos, ThermalPressure):
+                logger.warning("JCPDS files describe a thermal-pressure model, the PVT parameters will be interpreted differently")
             isothermal, thermal = self.eos.isothermal, self.eos.thermal
             dk0dt, dk0pdt = self.eos.dk0dt, self.eos.dk0pdt
         elif isinstance(self.eos, (ThermalExpansion, LatticeExpansion, VolumeExpansion)):

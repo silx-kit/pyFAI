@@ -3,7 +3,7 @@ COMMENT: Platinum (Pt), Fm-3m - Dorogokupets & Dewaele (2007) High Press. Res. 2
 COMMENT: Vinet fit at 298.15 K, V0 not given by the source, built on the data of Dewaele et al. (2004) Phys. Rev. B 70, 094112, doi:10.1103/PhysRevB.70.094112: table II, 15.095 A3/atom
 COMMENT: WARNING: the EOS keyword is a pyFAI extension, other programs read K0/K0P as Birch-Murnaghan
 COMMENT: Thermal model of the source: expanded Mie-Gruneisen-Debye, theta0=220 K, gamma0=2.82, gamma_inf=1.83, beta=8.11, a=-166.9e-6 /K, m=4.32, e=260.0e-6 /K, g=2.4
-COMMENT: ALPHAT, DALPHADT, DK0DT, DK0PDT fitted on this model at 0 GPa between 298 and 1000 K: temperature within 0.2 K at 0 GPa, pressure within 4.8 GPa down to V/V0=0.8 up to 1000 K
+COMMENT: ALPHAT, DALPHADT, DK0DT, DK0PDT fitted on this model (thermal pressure, as in Dioptas) between 298 and 1000 K, from 0 GPa down to V/V0=0.8: pressure within 0.08 GPa, temperature within 0.5 K at 0 GPa
 COMMENT: Intensities calculated (Cu Ka, Cromer-Mann form factors, no thermal factor)
 K0:        277.300
 K0P:       5.120
@@ -11,10 +11,10 @@ EOS:       VINET
 SYMMETRY:  CUBIC
 A:         3.92311
 VOLUME:    60.3800
-DK0DT:     -5.4392e-02
-DK0PDT:    1.1542e-03
-ALPHAT:    2.6976e-05
-DALPHADT:  4.1432e-09
+DK0DT:     -9.3386e-03
+DK0PDT:    2.5979e-04
+ALPHAT:    2.7051e-05
+DALPHADT:  1.3566e-09
 DIHKL:       2.2650   100.0   1   1   1
 DIHKL:       1.9616    49.1   2   0   0
 DIHKL:       1.3870    32.5   2   2   0
