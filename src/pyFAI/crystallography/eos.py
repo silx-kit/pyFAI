@@ -64,7 +64,8 @@ __status__ = "development"
 import logging
 from typing import ClassVar
 from abc import ABC, abstractmethod
-from math import exp
+from math import exp, expm1, pi
+from scipy.integrate import quad
 from scipy.optimize import brentq
 
 logger = logging.getLogger(__name__)
@@ -77,6 +78,8 @@ P_MAX = 1e5
 # Bounds (K) when bracketing an inverted temperature
 T_MIN = 1.0
 T_MAX = 1e4
+# Boltzmann constant in J/K
+K_B = 1.380649e-23
 
 
 def _normalize(name: str) -> str:
@@ -867,4 +870,219 @@ class PVT(EquationOfState):
                 "p0": self.p0}
         if self.v0 is not None:
             dico["v0"] = self.v0
+        return dico
+
+
+def debye_function(z: float) -> float:
+    """Debye function of order 3, D(z) = 3/z^3 \\int_0^z t^3/(e^t-1) dt.
+
+    D(0) = 1 (classical limit) and D(z) ~ pi^4/(5 z^3) for z >> 1.
+
+    :param z: reduced inverse temperature Theta/T, dimensionless
+    :return: D(z), dimensionless
+    """
+    if z < 1e-8:
+        return 1.0
+    if z > 60.0:  # the integral has converged to pi^4/15
+        return pi ** 4 / (5.0 * z ** 3)
+    integral = quad(lambda t: t ** 3 / expm1(t) if t > 0.0 else 0.0, 0.0, z)[0]
+    return 3.0 * integral / z ** 3
+
+
+class MieGruneisenDebye(EquationOfState):
+    """Thermal equation of state of Mie-Grüneisen-Debye type, possibly
+    expanded with intrinsic anharmonicity and free electrons (EMGD).
+
+    The pressure is the one of a reference isotherm at t0 plus the
+    difference of thermal pressure between T and t0 at constant volume:
+
+    .. math::
+
+        P(V,T) = P_{t_0}(V) + P_{th}(V,T) - P_{th}(V,t_0)
+
+        P_{th}(V,T) = \\frac{\\gamma}{V} 3 N k_B T D(\\Theta/T)
+        + \\frac{3}{2} \\frac{N k_B}{V} (a m x^m + e g x^g) T^2
+
+    with x = V/V0, the Debye function D and the volume dependence of the
+    Grüneisen parameter of Al'tshuler et al.:
+
+    .. math::
+
+        \\gamma = \\gamma_\\infty + (\\gamma_0 - \\gamma_\\infty) x^\\beta
+        \\qquad
+        \\Theta = \\Theta_0 x^{-\\gamma_\\infty}
+        \\exp\\left[\\frac{\\gamma_0 - \\gamma_\\infty}{\\beta}(1 - x^\\beta)\\right]
+
+    With ``gamma_inf = 0`` this is the usual form gamma = gamma0 x^q (q = beta)
+    used for example by Fei et al. (2007); with ``a = e = 0`` it is the
+    classical, quasi-harmonic, Mie-Grüneisen-Debye model.
+
+    Both directions of use are supported: pressure gauge (numerical inversion
+    of P at fixed T) and thermometer (numerical inversion of P at fixed V),
+    at any pressure, including ambient pressure.
+
+    Reference: P.I. Dorogokupets and A. Dewaele, Equations of state of MgO,
+    Au, Pt, NaCl-B1, and NaCl-B2: internally consistent high-temperature
+    pressure scales, High Press. Res. 27 (2007) 431-446.
+    https://doi.org/10.1080/08957950701659700
+
+    :param isothermal: compression model at the reference temperature, an
+                       EquationOfState instance (Vinet, Birch-Murnaghan, ...)
+                       or its dictionary representation
+    :param theta0: Debye temperature at the reference conditions, in K
+    :param gamma0: Grüneisen parameter at the reference conditions
+    :param beta: exponent of the volume dependence of the Grüneisen parameter
+                 (q when ``gamma_inf = 0``)
+    :param natoms: number of atoms in the unit cell of volume ``v0``
+    :param gamma_inf: Grüneisen parameter at infinite compression (0 by default)
+    :param a: intrinsic anharmonicity parameter, in K^-1 (0 by default)
+    :param m: exponent of the volume dependence of ``a``
+    :param e: free electrons parameter, in K^-1 (0 by default)
+    :param g: exponent of the volume dependence of ``e``
+    :param v0: unit-cell volume at the reference conditions, in A^3, taken
+               from the isothermal model when not provided. Mandatory: the
+               thermal pressure depends on the absolute volume.
+    :param t0: reference temperature in K, of the reference isotherm (298.15 K by default)
+    :param p0: reference pressure in GPa, taken from the isothermal model by default
+    """
+
+    name = "Mie-Gruneisen-Debye"
+
+    def __init__(self,
+                 isothermal: EquationOfState | dict,
+                 theta0: float,
+                 gamma0: float,
+                 beta: float,
+                 natoms: int,
+                 gamma_inf: float = 0.0,
+                 a: float = 0.0,
+                 m: float = 0.0,
+                 e: float = 0.0,
+                 g: float = 0.0,
+                 v0: float | None = None,
+                 t0: float = T_REF,
+                 p0: float | None = None):
+        if isinstance(isothermal, dict):
+            isothermal = EquationOfState.from_dict(isothermal)
+        super().__init__(v0=isothermal.v0 if v0 is None else v0,
+                         t0=t0,
+                         p0=isothermal.p0 if p0 is None else p0)
+        if self.v0 is None:
+            raise ValueError("The Mie-Grüneisen-Debye model requires the reference volume `v0`")
+        self.isothermal = isothermal
+        self.theta0 = float(theta0)
+        self.gamma0 = float(gamma0)
+        self.beta = float(beta)
+        self.natoms = int(natoms)
+        self.gamma_inf = float(gamma_inf)
+        self.a = float(a)
+        self.m = float(m)
+        self.e = float(e)
+        self.g = float(g)
+        if self.isothermal.p0 != self.p0:
+            logger.warning("Reference pressure of the isothermal model (%s GPa) differs from the composite one (%s GPa)",
+                           self.isothermal.p0, self.p0)
+
+    def gamma(self, ratio: float) -> float:
+        """Grüneisen parameter at the given relative volume
+
+        :param ratio: relative volume V/V0
+        :return: gamma, dimensionless
+        """
+        return self.gamma_inf + (self.gamma0 - self.gamma_inf) * ratio ** self.beta
+
+    def theta(self, ratio: float) -> float:
+        """Debye temperature at the given relative volume
+
+        :param ratio: relative volume V/V0
+        :return: Theta in K
+        """
+        return self.theta0 * ratio ** (-self.gamma_inf) \
+            * exp((self.gamma0 - self.gamma_inf) / self.beta * (1.0 - ratio ** self.beta))
+
+    def thermal_pressure(self,
+                         volume: float | None = None,
+                         temperature: float | None = None,
+                         ratio: float | None = None) -> float:
+        """Thermal pressure at constant volume, relative to the reference
+        temperature: P_th(V,T) - P_th(V,t0).
+
+        :param volume: absolute unit-cell volume in A^3
+        :param temperature: temperature in K (defaults to the reference temperature t0)
+        :param ratio: relative volume V/V0, alternative to ``volume``
+        :return: pressure in GPa
+        """
+        ratio = self._resolve_ratio(volume, ratio)
+        _pressure, temperature = self._reference_conditions(None, temperature)
+        if temperature <= 0.0:
+            raise ValueError(f"Temperature must be positive, got {temperature} K")
+        theta = self.theta(ratio)
+        nk = self.natoms * K_B / (ratio * self.v0 * 1e-30)  # Pa/K
+        # quasi-harmonic Debye part, the zero-point energy cancels out
+        energy = 3.0 * (temperature * debye_function(theta / temperature)
+                        - self.t0 * debye_function(theta / self.t0))
+        pth = self.gamma(ratio) * nk * energy
+        # intrinsic anharmonicity and free electrons
+        if self.a or self.e:
+            pth += 1.5 * nk * (self.a * self.m * ratio ** self.m + self.e * self.g * ratio ** self.g) \
+                * (temperature ** 2 - self.t0 ** 2)
+        return pth * 1e-9
+
+    def pressure(self,
+                 volume: float | None = None,
+                 temperature: float | None = None,
+                 ratio: float | None = None) -> float:
+        """Pressure from the unit-cell volume at a given temperature.
+
+        :param volume: absolute unit-cell volume in A^3
+        :param temperature: temperature in K (defaults to the reference temperature t0)
+        :param ratio: relative volume V/V0, alternative to ``volume``
+        :return: pressure in GPa
+        """
+        ratio = self._resolve_ratio(volume, ratio)
+        return self.isothermal.pressure(ratio=ratio) + self.thermal_pressure(ratio=ratio, temperature=temperature)
+
+    def volume_ratio(self, pressure: float | None = None, temperature: float | None = None) -> float:
+        """Calculate the relative unit-cell volume V/V0 at the given conditions.
+
+        Numerical inversion of :meth:`pressure` at fixed temperature.
+
+        :param pressure: pressure in GPa (defaults to the reference pressure p0)
+        :param temperature: temperature in K (defaults to the reference temperature t0)
+        :return: V/V0, dimensionless
+        """
+        pressure, temperature = self._reference_conditions(pressure, temperature)
+        return self._invert_ratio(pressure, temperature)
+
+    def temperature(self,
+                    volume: float | None = None,
+                    pressure: float | None = None,
+                    ratio: float | None = None) -> float:
+        """Calculate the temperature from the unit-cell volume at a given pressure.
+
+        The *thermometer* mode: numerical inversion of :meth:`pressure` at
+        fixed volume, the thermal pressure increasing with the temperature.
+
+        :param volume: absolute unit-cell volume in A^3
+        :param pressure: pressure in GPa (defaults to the reference pressure p0)
+        :param ratio: relative volume V/V0, alternative to ``volume``
+        :return: temperature in K
+        """
+        ratio = self._resolve_ratio(volume, ratio)
+        pressure, _temperature = self._reference_conditions(pressure, None)
+        target = pressure - self.isothermal.pressure(ratio=ratio)
+
+        def fun(t):
+            return self.thermal_pressure(ratio=ratio, temperature=t) - target
+
+        try:
+            return brentq(fun, T_MIN, T_MAX)
+        except ValueError:
+            raise ValueError(f"No temperature in [{T_MIN}, {T_MAX}] K matches V/V0={ratio} at {pressure} GPa with {self!r}") from None
+
+    def as_dict(self) -> dict:
+        dico = {"model": self.name,
+                "isothermal": self.isothermal.as_dict()}
+        dico.update((k, v) for k, v in vars(self).items()
+                    if not k.startswith("_") and k != "isothermal" and v is not None)
         return dico

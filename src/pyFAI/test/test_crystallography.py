@@ -34,6 +34,7 @@ __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
 __date__ = "10/09/2026"
 
+import json
 import logging
 import os
 import unittest
@@ -42,7 +43,7 @@ import numpy
 from ..crystallography import Cell, ReflectionCondition, resolution
 from .utilstest import UtilsTest
 from ..crystallography import EquationOfState
-from ..crystallography.eos import (BirchMurnaghan, LatticeExpansion, Murnaghan, PVT,
+from ..crystallography.eos import (BirchMurnaghan, LatticeExpansion, MieGruneisenDebye, Murnaghan, PVT,
                                    ThermalExpansion, Vinet, VolumeExpansion)
 from ..io.calibrant_config import CalibrantConfig
 from ..containers import Miller, Reflection
@@ -496,6 +497,89 @@ class TestPVT(unittest.TestCase):
         self.assertRaises(ValueError, self.eos.volume_ratio, 10.0, 9000.0)
 
 
+class TestMieGruneisenDebye(unittest.TestCase):
+    """Expanded Mie-Grüneisen-Debye model, checked against the isochors
+    published by Dorogokupets & Dewaele, High Press. Res. 27 (2007) 431,
+    tables 3 (Au) and 4 (Pt): pressure in GPa at x=V/V0 and T in K."""
+
+    TEMPERATURES = (298.15, 500, 1000, 1500, 2000, 2500)
+    ISOCHORS_AU: ClassVar[dict] = {1.0: (0.000, 1.408, 4.921, 8.441, 11.963, 15.485),
+                                   0.9: (23.903, 25.191, 28.419, 31.658, 34.900, 38.143),
+                                   0.8: (70.578, 71.807, 74.911, 78.032, 81.158, 84.286),
+                                   0.7: (162.373, 163.600, 166.742, 169.914, 173.094, 176.277)}
+    ISOCHORS_PT: ClassVar[dict] = {1.0: (0.000, 1.513, 5.259, 8.951, 12.580, 16.142),
+                                   0.9: (38.120, 39.474, 42.909, 46.383, 49.882, 53.404),
+                                   0.8: (107.766, 109.110, 112.598, 116.195, 119.876, 123.638),
+                                   0.7: (236.477, 237.897, 241.675, 245.616, 249.679, 253.855)}
+
+    def setUp(self):
+        # table 1 of Dorogokupets & Dewaele (2007), V0 from Dewaele et al. (2004)
+        self.au = MieGruneisenDebye(Vinet(k0=167.0, k0p=5.90),
+                                    theta0=170, gamma0=2.89, gamma_inf=1.54, beta=4.36,
+                                    natoms=4, v0=4 * 16.962)
+        self.pt = MieGruneisenDebye(Vinet(k0=277.3, k0p=5.12),
+                                    theta0=220, gamma0=2.82, gamma_inf=1.83, beta=8.11,
+                                    a=-166.9e-6, m=4.32, e=260.0e-6, g=2.4,
+                                    natoms=4, v0=4 * 15.095)
+
+    def check_isochors(self, eos, isochors):
+        for ratio, pressures in isochors.items():
+            for temperature, expected in zip(self.TEMPERATURES, pressures):
+                # the published values are reproduced within 0.2%
+                self.assertAlmostEqual(eos.pressure(ratio=ratio, temperature=temperature), expected,
+                                       delta=0.03 + 1e-3 * expected,
+                                       msg=f"V/V0={ratio}, T={temperature}K")
+
+    def test_isochors_au(self):
+        "Quasi-harmonic model: gold"
+        self.check_isochors(self.au, self.ISOCHORS_AU)
+
+    def test_isochors_pt(self):
+        "Expanded model, with anharmonic and electronic contributions: platinum"
+        self.check_isochors(self.pt, self.ISOCHORS_PT)
+
+    def test_reference_conditions(self):
+        self.assertAlmostEqual(self.au.volume_ratio(), 1.0, places=12)
+        self.assertAlmostEqual(self.au.thermal_pressure(ratio=0.9), 0.0, places=12)
+        self.assertEqual(self.au.p0, 0.0)
+        self.assertRaises(ValueError, MieGruneisenDebye, Vinet(k0=167.0, k0p=5.90),
+                          theta0=170, gamma0=2.89, beta=4.36, natoms=4)
+
+    def test_classical_limit(self):
+        "At high temperature the Debye energy tends to 3NkT: dP/dT = 3 N k gamma / V"
+        ratio = 0.9
+        dpdt = (self.au.thermal_pressure(ratio=ratio, temperature=5001.0)
+                - self.au.thermal_pressure(ratio=ratio, temperature=5000.0))
+        expected = 3 * 4 * 1.380649e-23 * self.au.gamma(ratio) / (ratio * self.au.v0 * 1e-30) * 1e-9
+        # next term of the expansion: 1 - (Theta/T)^2 / 20, about 1e-4 here
+        self.assertAlmostEqual(dpdt / expected, 1.0, places=3)
+
+    def test_thermal_expansion_au(self):
+        "Volume thermal expansion of gold at ambient conditions, about 4.2e-5 /K"
+        alpha = (self.au.volume_ratio(0.0, 299.15) - self.au.volume_ratio(0.0, 297.15)) / 2.0
+        self.assertAlmostEqual(alpha * 1e5, 4.16, delta=0.01)
+
+    def test_thermometer(self):
+        "Temperature recovered from the volume, at ambient and high pressure"
+        for pressure in (0.0, 30.0):
+            for temperature in (300.0, 800.0, 1300.0):
+                volume = self.au.volume(pressure=pressure, temperature=temperature)
+                self.assertAlmostEqual(self.au.temperature(volume=volume, pressure=pressure), temperature, places=6)
+        # unreachable volume: smaller than the one at 1 K
+        self.assertRaises(ValueError, self.au.temperature, ratio=0.99, pressure=0.0)
+
+    def test_pressure_gauge(self):
+        for temperature in (298.15, 1500.0):
+            ratio = self.pt.volume_ratio(pressure=50.0, temperature=temperature)
+            self.assertAlmostEqual(self.pt.pressure(ratio=ratio, temperature=temperature), 50.0, places=6)
+
+    def test_serialization(self):
+        for eos in (self.au, self.pt):
+            dico = json.loads(json.dumps(eos.as_dict()))
+            self.assertEqual(dico["model"], "Mie-Gruneisen-Debye")
+            self.assertEqual(EquationOfState.from_dict(dico), eos)
+
+
 class TestVolumeExpansion(unittest.TestCase):
     """Polynomial expansion of the volume, the JCPDS parametrization"""
 
@@ -850,6 +934,7 @@ def suite():
     testsuite.addTest(loader(TestLatticeExpansion))
     testsuite.addTest(loader(TestMurnaghan))
     testsuite.addTest(loader(TestPVT))
+    testsuite.addTest(loader(TestMieGruneisenDebye))
     testsuite.addTest(loader(TestVolumeExpansion))
     testsuite.addTest(loader(TestJCPDS))
     testsuite.addTest(loader(TestCalibrantHeaders))
