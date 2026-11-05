@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 04/10/2026
+:Date: 04/11/2026
 :Keywords: changelog
 
 Change-log of versions
@@ -19,6 +19,8 @@ Change-log of versions
   * Read and write JCPDS (version 4) files, with the equation of state, and a set of cards for Au, Pt, NaCl and Ne taken from the literature.
 
 - Bug fixes:
+
+  * Fix the calibrant files read or written under Windows (#2988, #2990)
 
 - Documentation:
 

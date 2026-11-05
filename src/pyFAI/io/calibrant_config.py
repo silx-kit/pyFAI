@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/06/2026"
+__date__ = "04/11/2026"
 __status__ = "development"
 __docformat__ = "restructuredtext"
 
@@ -146,7 +146,7 @@ class CalibrantConfig:
                 out.append(f"{ref.dspacing:12.8f} # {ref.hkl!s:10s}")
             else:
                 out.append(f"{ref.dspacing:12.8f}")
-        return os.linesep.join(out)
+        return "\n".join(out)
 
     @classmethod
     def from_DIF(cls, filename: str):
@@ -159,7 +159,7 @@ class CalibrantConfig:
         :return: CalibrantConfig instance
         """
         raw = []
-        with open(filename) as fd:
+        with open(filename, encoding="utf-8", errors="replace") as fd:
             for line in fd:
                 raw.append(line.strip())
         reflections = []
@@ -213,7 +213,7 @@ class CalibrantConfig:
         begining = True
         self = cls(filename=filename)
         raw = []
-        with open(filename) as f:
+        with open(filename, encoding="utf-8", errors="replace") as f:
             for line in f:
                 raw.append(line.strip())
 
@@ -419,7 +419,7 @@ class CalibrantConfig:
         comments = []
         values = {}
         reflections = []
-        with open(filename) as fd:
+        with open(filename, encoding="utf-8", errors="replace") as fd:
             for line in fd:
                 if ":" not in line:
                     continue
@@ -579,7 +579,7 @@ class CalibrantConfig:
             hkl = reflection.hkl if reflection.hkl else (0, 0, 0)
             intensity = 100.0 if reflection.intensity is None else reflection.intensity
             lines.append(f"DIHKL: {reflection.dspacing:.8f} {intensity:g} {hkl[0]} {hkl[1]} {hkl[2]}")
-        return os.linesep.join(lines)
+        return "\n".join(lines)
 
     def save_JCPDS(self, filename: str):
         """Save the calibrant structure into a JCPDS (version 4) file.
