@@ -40,6 +40,7 @@ import os
 import unittest
 from typing import ClassVar
 import numpy
+import scipy.constants
 from ..crystallography import Cell, ReflectionCondition, resolution
 from .utilstest import UtilsTest
 from ..crystallography import EquationOfState
@@ -550,7 +551,7 @@ class TestMieGruneisenDebye(unittest.TestCase):
         ratio = 0.9
         dpdt = (self.au.thermal_pressure(ratio=ratio, temperature=5001.0)
                 - self.au.thermal_pressure(ratio=ratio, temperature=5000.0))
-        expected = 3 * 4 * 1.380649e-23 * self.au.gamma(ratio) / (ratio * self.au.v0 * 1e-30) * 1e-9
+        expected = 3 * 4 * scipy.constants.Boltzmann * self.au.gamma(ratio) / (ratio * self.au.v0 * 1e-30) * 1e-9
         # next term of the expansion: 1 - (Theta/T)^2 / 20, about 1e-4 here
         self.assertAlmostEqual(dpdt / expected, 1.0, places=3)
 

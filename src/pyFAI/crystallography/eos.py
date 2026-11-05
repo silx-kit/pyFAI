@@ -65,6 +65,7 @@ import logging
 from typing import ClassVar
 from abc import ABC, abstractmethod
 from math import exp, expm1, pi
+from scipy.constants import Boltzmann as K_B
 from scipy.integrate import quad
 from scipy.optimize import brentq
 
@@ -78,8 +79,6 @@ P_MAX = 1e5
 # Bounds (K) when bracketing an inverted temperature
 T_MIN = 1.0
 T_MAX = 1e4
-# Boltzmann constant in J/K
-K_B = 1.380649e-23
 
 
 def _normalize(name: str) -> str:
