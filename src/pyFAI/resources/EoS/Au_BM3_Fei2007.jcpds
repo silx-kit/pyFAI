@@ -1,6 +1,6 @@
 VERSION:   4
 COMMENT: Gold (Au), Fm-3m - Fei et al. (2007) PNAS 104, 9182-9186, doi:10.1073/pnas.0609013104, table 1
-COMMENT: 3rd order Birch-Murnaghan fit at 300 K, see Au_Vinet_2007.jcpds for the Vinet fit
+COMMENT: 3rd order Birch-Murnaghan fit at 300 K, see Au_Vinet_Fei2007.jcpds for the Vinet fit
 COMMENT: Thermal model of the source is Mie-Gruneisen-Debye, not representable in JCPDS: theta0=170 K, gamma0=2.97, q0=0.6
 COMMENT: Intensities calculated (Cu Ka, Cromer-Mann form factors, no thermal factor)
 K0:        167.000

@@ -1,12 +1,10 @@
 VERSION:   4
 COMMENT: NaCl-B2 (CsCl-type), Pm-3m - Fei et al. (2007) PNAS 104, 9182-9186, doi:10.1073/pnas.0609013104, table 1
-COMMENT: Vinet fit at 300 K, see NaCl-B2_BM3_2007.jcpds for the 3rd order Birch-Murnaghan fit
-COMMENT: WARNING: the EOS keyword is a pyFAI extension, other programs read K0/K0P as Birch-Murnaghan
+COMMENT: 3rd order Birch-Murnaghan fit at 300 K, see NaCl-B2_Vinet_Fei2007.jcpds for the Vinet fit
 COMMENT: Thermal model of the source is Mie-Gruneisen-Debye, not representable in JCPDS: theta0=290 K, gamma0=1.70, q0=0.5
 COMMENT: Intensities calculated (Cu Ka, Cromer-Mann form factors, no thermal factor)
-K0:        26.860
-K0P:       5.250
-EOS:       VINET
+K0:        30.690
+K0P:       4.330
 SYMMETRY:  CUBIC
 A:         3.45800
 VOLUME:    41.3500
