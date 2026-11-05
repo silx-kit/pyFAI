@@ -1,0 +1,21 @@
+VERSION:   4
+COMMENT: Gold (Au), Fm-3m - Tsuchiya (2003) J. Geophys. Res. 108(B10), doi:10.1029/2003JB002446, table 2
+COMMENT: First-principles (LDA, quasi-harmonic) Vinet EoS at 298 K, V0=10.207 cm3/mol (experiment: 10.215 cm3/mol)
+COMMENT: WARNING: the EOS keyword is a pyFAI extension, other programs read K0/K0P as Birch-Murnaghan
+COMMENT: ALPHAT is the calculated value at 0 GPa and 298 K; source thermal model: gamma0=3.16, q=2.15, thetaD=180 K
+COMMENT: Intensities calculated (Cu Ka, Cromer-Mann form factors, no thermal factor)
+K0:        166.700
+K0P:       6.120
+EOS:       VINET
+SYMMETRY:  CUBIC
+A:         4.07758
+VOLUME:    67.7965
+ALPHAT:    4.520e-05
+DIHKL:       2.3542   100.0   1   1   1
+DIHKL:       2.0388    49.4   2   0   0
+DIHKL:       1.4416    33.0   2   2   0
+DIHKL:       1.2294    39.8   3   1   1
+DIHKL:       1.1771    11.7   2   2   2
+DIHKL:       1.0194     6.6   4   0   0
+DIHKL:       0.9355    25.6   3   3   1
+DIHKL:       0.9118    26.2   4   2   0

@@ -600,11 +600,26 @@ class TestJCPDS(unittest.TestCase):
         # the cell parameter is rounded to 5 decimal places in the cell description
         self.assertAlmostEqual(clone.eos.v0, cell.volume, places=3)
 
-    def test_unsupported_model(self):
-        "A Vinet EoS cannot be mapped onto the JCPDS parametrization"
+    def test_vinet(self):
+        "A Vinet EoS is exported with the (pyFAI specific) EOS keyword and reimported"
         cell = Cell.cubic(4.0786, lattice_type="F")
         config = cell.build_calibrant_config(dmin=1.0)
-        config.eos = Vinet(k0=167.0, k0p=6.0)
+        config.eos = PVT(Vinet(k0=167.0, k0p=6.0),
+                         VolumeExpansion([4.26e-5]),
+                         v0=cell.volume)
+        text = config.to_JCPDS()
+        self.assertIn("EOS: VINET", text)
+        fname = os.path.join(UtilsTest.tempdir, "Au_vinet.jcpds")
+        config.save_JCPDS(fname)
+        clone = CalibrantConfig.from_JCPDS(fname)
+        self.assertIsInstance(clone.eos.isothermal, Vinet)
+        self.assertEqual(clone.eos, config.eos)
+
+    def test_unsupported_model(self):
+        "A volume expansion with more than 2 coefficients cannot be mapped onto the JCPDS parametrization"
+        cell = Cell.cubic(4.0786, lattice_type="F")
+        config = cell.build_calibrant_config(dmin=1.0)
+        config.eos = VolumeExpansion([4.26e-5, 1.0e-9, 1.0e-12])
         self.assertRaises(ValueError, config.to_JCPDS)
 
 

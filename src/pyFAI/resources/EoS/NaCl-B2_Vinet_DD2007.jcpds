@@ -1,0 +1,22 @@
+VERSION:   4
+COMMENT: NaCl-B2 (CsCl-type), Pm-3m - Dorogokupets & Dewaele (2007) High Press. Res. 27, 431-446, doi:10.1080/08957950701659700, table 1
+COMMENT: Vinet fit at 298.15 K, V0=24.53 cm3/mol (table 1), Z=1
+COMMENT: WARNING: the EOS keyword is a pyFAI extension, other programs read K0/K0P as Birch-Murnaghan
+COMMENT: Thermal model of the source is an expanded Mie-Gruneisen-Debye (anharmonic, electronic), not representable in JCPDS: theta0=270 K, gamma0=1.64, see table 1 of the source
+COMMENT: Intensities calculated (Cu Ka, Cromer-Mann form factors, no thermal factor)
+K0:        29.720
+K0P:       5.140
+EOS:       VINET
+SYMMETRY:  CUBIC
+A:         3.44072
+VOLUME:    40.7330
+DIHKL:       3.4407     5.8   1   0   0
+DIHKL:       2.4330   100.0   1   1   0
+DIHKL:       1.9865     0.9   1   1   1
+DIHKL:       1.7204    15.3   2   0   0
+DIHKL:       1.5387     1.1   2   1   0
+DIHKL:       1.4047    28.9   2   1   1
+DIHKL:       1.2165     8.6   2   2   0
+DIHKL:       1.1469     0.7   2   2   1
+DIHKL:       1.1469     0.2   3   0   0
+DIHKL:       1.0881    12.4   3   1   0

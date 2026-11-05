@@ -402,14 +402,20 @@ class CalibrantConfig:
         instance stored in the ``eos`` attribute: a PVT composite when both
         are present, the bare model otherwise.
 
+        The compression model is Birch-Murnaghan, as assumed by the format.
+        The optional keyword ``EOS``, an extension of the format specific to
+        pyFAI, selects another model with the same parameters (K0, K0P), i.e.
+        ``EOS: VINET`` or ``EOS: MURNAGHAN``.
+
         :param filename: name of the jcpds-file
         :return: CalibrantConfig instance
         """
         from ..crystallography.cell import Cell  # lazy loading to prevent cyclic imports
-        from ..crystallography.eos import BirchMurnaghan, PVT, VolumeExpansion
+        from ..crystallography.eos import BirchMurnaghan, EquationOfState, PVT, VolumeExpansion
 
         version = None
         symmetry = None
+        model = BirchMurnaghan.name
         comments = []
         values = {}
         reflections = []
@@ -426,6 +432,8 @@ class CalibrantConfig:
                     comments.append(value)
                 elif tag == "SYMMETRY":
                     symmetry = value.upper()
+                elif tag == "EOS":
+                    model = value
                 elif tag == "DIHKL":
                     words = value.replace(",", " ").split()
                     if len(words) >= 5:
@@ -461,7 +469,7 @@ class CalibrantConfig:
 
         isothermal = thermal = eos = None
         if "K0" in values:
-            isothermal = BirchMurnaghan(k0=values["K0"], k0p=values.get("K0P", 4.0))
+            isothermal = EquationOfState.factory(model, k0=values["K0"], k0p=values.get("K0P", 4.0))
         if values.get("ALPHAT"):
             coefficients = [values["ALPHAT"]]
             if values.get("DALPHADT"):
@@ -491,11 +499,14 @@ class CalibrantConfig:
         present, must map onto the JCPDS parametrization: a Birch-Murnaghan
         compression and/or a polynomial volume expansion (possibly combined in
         a PVT composite); other models raise a ValueError.
+        Vinet and Murnaghan compressions are exported with the keyword ``EOS``,
+        an extension of the format specific to pyFAI: other programs (Dioptas)
+        ignore it and would interpret the parameters as Birch-Murnaghan ones.
 
         :return: content of the JCPDS file as a string
         """
-        from ..crystallography.eos import (BirchMurnaghan, LatticeExpansion, PVT,
-                                           ThermalExpansion, VolumeExpansion)
+        from ..crystallography.eos import (BirchMurnaghan, LatticeExpansion, Murnaghan, PVT,
+                                           ThermalExpansion, Vinet, VolumeExpansion)
 
         lines = ["VERSION: 4"]
         if self.description or self.name:
@@ -511,7 +522,9 @@ class CalibrantConfig:
         elif self.eos is not None:
             isothermal = self.eos
         if isothermal is not None:
-            if not isinstance(isothermal, BirchMurnaghan):
+            if isinstance(isothermal, (Vinet, Murnaghan)):
+                lines.append(f"EOS: {isothermal.name.upper()}")
+            elif not isinstance(isothermal, BirchMurnaghan):
                 raise ValueError(f"JCPDS assumes a Birch-Murnaghan compression model, unable to export {isothermal!r}")
             lines.append(f"K0: {isothermal.k0:.10g}")
             lines.append(f"K0P: {isothermal.k0p:.10g}")
