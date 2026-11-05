@@ -615,6 +615,39 @@ class TestJCPDS(unittest.TestCase):
         self.assertIsInstance(clone.eos.isothermal, Vinet)
         self.assertEqual(clone.eos, config.eos)
 
+    def test_all_shipped_cards(self):
+        "Every JCPDS card shipped in resources/EoS parses, is self-consistent and survives a write/parse cycle"
+        from ..resources import resource_filename
+        eos_dir = resource_filename("EoS")
+        models = {"BM3": BirchMurnaghan, "Vinet": Vinet}
+        fnames = sorted(f for f in os.listdir(eos_dir) if f.endswith(".jcpds"))
+        self.assertTrue(fnames, f"No JCPDS card found in {eos_dir}")
+        for fname in fnames:
+            with self.subTest(card=fname):
+                filename = os.path.join(eos_dir, fname)
+                config = CalibrantConfig.from_JCPDS(filename)
+                cell = config.to_cell()
+                self.assertIsNotNone(cell)
+                # VOLUME is redundant with the cell parameters, it must match
+                with open(filename) as fd:
+                    volume = [float(line.split(":", 1)[1]) for line in fd if line.upper().startswith("VOLUME:")]
+                self.assertEqual(len(volume), 1)
+                self.assertAlmostEqual(volume[0], cell.volume, delta=1e-3)
+                # d-spacings must match the cell
+                self.assertTrue(config.reflections)
+                for reflection in config.reflections:
+                    self.assertAlmostEqual(reflection.dspacing, cell.d(reflection.hkl), delta=1e-4)
+                # the compression model is the one named in the filename: material_model_authorYear.jcpds
+                isothermal = config.eos.isothermal if isinstance(config.eos, PVT) else config.eos
+                self.assertIs(type(isothermal), models[fname.split("_")[-2]])
+                self.assertAlmostEqual(config.eos.v0, cell.volume, places=6)
+
+                tmp = os.path.join(UtilsTest.tempdir, fname)
+                config.save_JCPDS(tmp)
+                clone = CalibrantConfig.from_JCPDS(tmp)
+                self.assertEqual(clone.eos, config.eos)
+                self.assertEqual(len(clone.reflections), len(config.reflections))
+
     def test_unsupported_model(self):
         "A volume expansion with more than 2 coefficients cannot be mapped onto the JCPDS parametrization"
         cell = Cell.cubic(4.0786, lattice_type="F")
