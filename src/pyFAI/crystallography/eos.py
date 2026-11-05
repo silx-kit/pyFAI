@@ -712,7 +712,8 @@ class VolumeExpansion(EquationOfState):
     This is the parametrization of JCPDS (version 4) files used by the
     high-pressure community (Dioptas, GSECARS):
     V0(T) = V0 [1 + alpha(T) (T-T0)] with alpha(T) = ALPHAT + DALPHADT (T-T0),
-    i.e. ``coefficients = [ALPHAT, DALPHADT]``.
+    i.e. ``coefficients = [ALPHAT, DALPHADT]``, combined with the compression
+    in a :class:`ThermalPressure` model.
     Pressure is ignored: the model only holds at the reference pressure.
 
     :param coefficients: polynomial coefficients [c1, c2, ...] of the
@@ -870,6 +871,92 @@ class PVT(EquationOfState):
         if self.v0 is not None:
             dico["v0"] = self.v0
         return dico
+
+
+class ThermalPressure(PVT):
+    """Composite P-V-T equation of state of JCPDS (version 4) files, in the
+    *thermal pressure* approach of Dioptas.
+
+    The reference volume V0 does not change: the isothermal model, with its
+    parameters corrected linearly in temperature, is shifted by a thermal
+    pressure proportional to the volume expansion at ambient pressure:
+
+    .. math::
+
+        P(V,T) = P\\left(V/V_0; K_0(T), K_0'(T)\\right) + K_0(T)\\,[V_0(T)/V_0 - 1]
+
+    with K0(T) = K0 + dk0dt (T - T0), K0'(T) = K0' + dk0pdt (T - T0) and,
+    for the JCPDS parametrization, V0(T)/V0 - 1 = ALPHAT (T-T0) + DALPHADT (T-T0)^2,
+    i.e. a VolumeExpansion with ``coefficients = [ALPHAT, DALPHADT]``.
+
+    At ambient pressure, the expansion is close to (but not exactly) the one
+    of the thermal model, the difference coming from the curvature of the
+    isotherm. Unlike in :class:`PVT`, the parameters of the thermal model
+    are therefore not the volume expansion of the material: they must be
+    fitted for this model, as done for the cards distributed with Dioptas
+    (e.g. McHardy et al., Phys. Rev. B 109 (2024) 094113, table III).
+
+    :param isothermal: compression model, an EquationOfState instance
+                       (Birch-Murnaghan, Vinet, Murnaghan, ...) or its
+                       dictionary representation, with a ``k0`` parameter
+    :param thermal: expansion model, an EquationOfState instance
+                    (VolumeExpansion, ...) or its dictionary representation
+    :param dk0dt: temperature-derivative of the bulk modulus, in GPa/K (0 by default)
+    :param dk0pdt: temperature-derivative of K0', in K^-1 (0 by default)
+    :param v0: unit-cell volume at the reference conditions, in A^3 (optional)
+    :param t0: reference temperature in K, taken from the thermal model by default
+    :param p0: reference pressure in GPa, taken from the isothermal model by default
+    """
+
+    name = "thermal-pressure"
+
+    def __init__(self,
+                 isothermal: EquationOfState | dict,
+                 thermal: EquationOfState | dict,
+                 dk0dt: float = 0.0,
+                 dk0pdt: float = 0.0,
+                 v0: float | None = None,
+                 t0: float | None = None,
+                 p0: float | None = None):
+        super().__init__(isothermal, thermal, dk0dt=dk0dt, dk0pdt=dk0pdt, v0=v0, t0=t0, p0=p0)
+        if "k0" not in self.isothermal.as_dict():
+            raise ValueError(f"The thermal pressure requires an isothermal model with a `k0` parameter, not {self.isothermal!r}")
+
+    def thermal_pressure(self, temperature: float | None = None) -> float:
+        """Thermal pressure, K0(T) [V0(T)/V0 - 1], independent of the volume.
+
+        :param temperature: temperature in K (defaults to the reference temperature t0)
+        :return: pressure in GPa
+        """
+        _pressure, temperature = self._reference_conditions(None, temperature)
+        k0 = self.isothermal.k0 + self.dk0dt * (temperature - self.t0)
+        return k0 * (self.thermal.volume_ratio(temperature=temperature) - 1.0)
+
+    def volume_ratio(self, pressure: float | None = None, temperature: float | None = None) -> float:
+        """Calculate the relative unit-cell volume V/V0 at the given conditions.
+
+        :param pressure: pressure in GPa (defaults to the reference pressure p0)
+        :param temperature: temperature in K (defaults to the reference temperature t0)
+        :return: V/V0, dimensionless
+        """
+        pressure, temperature = self._reference_conditions(pressure, temperature)
+        return self._isothermal_at(temperature).volume_ratio(pressure=pressure - self.thermal_pressure(temperature))
+
+    def pressure(self,
+                 volume: float | None = None,
+                 temperature: float | None = None,
+                 ratio: float | None = None) -> float:
+        """Calculate the pressure from the unit-cell volume at a given temperature.
+
+        :param volume: absolute unit-cell volume in A^3 (requires ``v0``)
+        :param temperature: temperature in K (defaults to the reference temperature t0)
+        :param ratio: relative volume V/V0, alternative to ``volume``
+        :return: pressure in GPa
+        """
+        ratio = self._resolve_ratio(volume, ratio)
+        _pressure, temperature = self._reference_conditions(None, temperature)
+        return self._isothermal_at(temperature).pressure(ratio=ratio, temperature=temperature) \
+            + self.thermal_pressure(temperature)
 
 
 def debye_function(z: float) -> float:

@@ -45,11 +45,11 @@ from .calibrant import Calibrant
 from .calibrant_factory import CALIBRANT_FACTORY
 from .cell import Cell
 from .eos import (BirchMurnaghan, EquationOfState, LatticeExpansion, MieGruneisenDebye, Murnaghan,
-                  PVT, ThermalExpansion, Vinet, VolumeExpansion)
+                  PVT, ThermalExpansion, ThermalPressure, Vinet, VolumeExpansion)
 from .space_groups import ReflectionCondition
 
 
 __all__ = ["Calibrant", "CALIBRANT_FACTORY", "Cell", "ReflectionCondition",
           "BirchMurnaghan", "LatticeExpansion", "MieGruneisenDebye", "Murnaghan", "PVT",
-          "ReflectionCondition", "ThermalExpansion",
+          "ReflectionCondition", "ThermalExpansion", "ThermalPressure",
            "Vinet", "VolumeExpansion", "EquationOfState"]

@@ -46,8 +46,8 @@ from ..crystallography import Cell, ReflectionCondition, resolution
 from .utilstest import UtilsTest
 from ..crystallography import EquationOfState
 from ..crystallography.eos import (BirchMurnaghan, LatticeExpansion, MieGruneisenDebye, Murnaghan, PVT,
-                                   ThermalExpansion, Vinet, VolumeExpansion)
-from ..io.calibrant_config import CalibrantConfig
+                                   ThermalExpansion, ThermalPressure, Vinet, VolumeExpansion)
+from ..io.calibrant_config import CalibrantConfig, JCPDS_T_REF
 from ..containers import Miller, Reflection
 
 logger = logging.getLogger(__name__)
@@ -499,6 +499,72 @@ class TestPVT(unittest.TestCase):
         self.assertRaises(ValueError, self.eos.volume_ratio, 10.0, 9000.0)
 
 
+class TestThermalPressure(unittest.TestCase):
+    """Composite P-V-T model of JCPDS files, thermal pressure approach of Dioptas"""
+
+    # P-V-T points (V/V0, T in K, P in GPa) of the AP2 + Holland-Powell thermal EoS of rhodium,
+    # McHardy et al., Phys. Rev. B 109 (2024) 094113, table III
+    RH_AP2_HP: ClassVar[list] = [
+        (0.873175, 298, 50), (0.803582, 298, 100), (0.719217, 298, 200),
+        (1.022633, 1000, 0), (0.882961, 1000, 50), (0.809807, 1000, 100), (0.722769, 1000, 200),
+        (1.068448, 2000, 0), (0.900305, 2000, 50), (0.820503, 2000, 100), (0.728739, 2000, 200),
+        (1.136101, 3000, 0), (0.920118, 3000, 50), (0.832184, 3000, 100), (0.735063, 3000, 200)]
+
+    def setUp(self):
+        self.isothermal = BirchMurnaghan(k0=167.0, k0p=5.5)
+        self.thermal = VolumeExpansion([4.2e-5, 5.0e-9], t0=298.0)
+        self.eos = ThermalPressure(self.isothermal, self.thermal, dk0dt=-0.02, dk0pdt=1e-4, v0=4.0786 ** 3)
+
+    def test_reference_conditions(self):
+        self.assertAlmostEqual(self.eos.volume_ratio(), 1.0, places=12)
+        self.assertEqual(self.eos.t0, 298.0)
+        self.assertEqual(self.eos.thermal_pressure(), 0.0)
+        self.assertAlmostEqual(self.eos.volume_ratio(pressure=10.0),
+                               self.isothermal.volume_ratio(pressure=10.0), places=12)
+
+    def test_composition(self):
+        "P(V,T) = P(V; K0(T), K0'(T)) + K0(T) [V0(T)/V0 - 1]"
+        ratio, t = 0.9, 800.0
+        dt = t - 298.0
+        k0 = 167.0 - 0.02 * dt
+        corrected = BirchMurnaghan(k0=k0, k0p=5.5 + 1e-4 * dt)
+        expected = corrected.pressure(ratio=ratio) + k0 * (4.2e-5 * dt + 5.0e-9 * dt * dt)
+        self.assertAlmostEqual(self.eos.pressure(ratio=ratio, temperature=t), expected, places=10)
+
+    def test_ambient_expansion(self):
+        "At ambient pressure and t0, the volumetric expansion coefficient is ALPHAT"
+        h = 1e-3
+        alpha = (self.eos.volume_ratio(temperature=298.0 + h) - self.eos.volume_ratio(temperature=298.0 - h)) / (2 * h)
+        self.assertAlmostEqual(alpha / 4.2e-5, 1.0, places=6)
+
+    def test_inversions(self):
+        "Pressure gauge and thermometer modes"
+        for p, t in ((0.0, 700.0), (5.0, 500.0), (25.0, 1200.0)):
+            ratio = self.eos.volume_ratio(pressure=p, temperature=t)
+            self.assertAlmostEqual(self.eos.pressure(ratio=ratio, temperature=t), p, places=8)
+            self.assertAlmostEqual(self.eos.temperature(ratio=ratio, pressure=p), t, places=6)
+
+    def test_serialization(self):
+        dico = self.eos.as_dict()
+        self.assertEqual(dico["model"], "thermal-pressure")
+        self.assertEqual(dico, json.loads(json.dumps(dico)))
+        self.assertEqual(self.eos, EquationOfState.from_dict(dico))
+
+    def test_validation(self):
+        "The thermal pressure is proportional to K0"
+        self.assertRaises(ValueError, ThermalPressure, self.thermal, self.thermal)
+
+    def test_dioptas_rhodium(self):
+        """The parameters optimized for Dioptas by McHardy et al. (2024), table III, reproduce
+        their thermal EoS within 0.6 GPa, from 298 to 3000 K and 0 to 200 GPa"""
+        eos = ThermalPressure(BirchMurnaghan(k0=260.54, k0p=5.114),
+                              VolumeExpansion([2.99e-5, 1.27e-9], t0=298.0),
+                              dk0dt=-6.43e-5, dk0pdt=-9.3e-10)
+        for ratio, t, p in self.RH_AP2_HP:
+            with self.subTest(ratio=ratio, temperature=t):
+                self.assertAlmostEqual(eos.pressure(ratio=ratio, temperature=t), p, delta=0.6)
+
+
 class TestMieGruneisenDebye(unittest.TestCase):
     """Expanded Mie-Grüneisen-Debye model, checked against the isochors
     published by Dorogokupets & Dewaele, High Press. Res. 27 (2007) 431,
@@ -658,7 +724,8 @@ class TestJCPDS(unittest.TestCase):
         self.assertEqual(config.reflections[0].hkl, (1, 1, 1))
         self.assertAlmostEqual(config.reflections[1].intensity, 52.0, places=6)
         eos = config.eos
-        self.assertIsInstance(eos, PVT)
+        self.assertIsInstance(eos, ThermalPressure)
+        self.assertEqual(eos.t0, JCPDS_T_REF)
         self.assertAlmostEqual(eos.isothermal.k0, 166.65, places=6)
         self.assertAlmostEqual(eos.dk0dt, -0.021, places=6)
         self.assertEqual(eos.thermal.coefficients, [4.26e-05, 1.5e-08])
@@ -673,10 +740,10 @@ class TestJCPDS(unittest.TestCase):
         config = cell.build_calibrant_config(dmin=1.0)
         config.name = "Au"
         config.description = "Gold"
-        config.eos = PVT(BirchMurnaghan(k0=166.65, k0p=5.4823),
-                         VolumeExpansion([4.26e-5, 1.0e-9]),
-                         dk0dt=-0.021,
-                         v0=cell.volume)
+        config.eos = ThermalPressure(BirchMurnaghan(k0=166.65, k0p=5.4823),
+                                     VolumeExpansion([4.26e-5, 1.0e-9], t0=JCPDS_T_REF),
+                                     dk0dt=-0.021,
+                                     v0=cell.volume)
         text = config.to_JCPDS()
         self.assertIn("SYMMETRY: CUBIC", text)
         self.assertIn("K0: 166.65", text)
@@ -701,7 +768,7 @@ class TestJCPDS(unittest.TestCase):
         cell = Cell.diamond(5.431179)
         config = cell.build_calibrant_config(dmin=1.5)
         config.description = "Silicon"
-        config.eos = VolumeExpansion([7.8e-6])
+        config.eos = VolumeExpansion([7.8e-6], t0=JCPDS_T_REF)
         fname = os.path.join(UtilsTest.tempdir, "Si_out.jcpds")
         config.save_JCPDS(fname)
         clone = CalibrantConfig.from_JCPDS(fname)
@@ -714,9 +781,9 @@ class TestJCPDS(unittest.TestCase):
         "A Vinet EoS is exported with the (pyFAI specific) EOS keyword and reimported"
         cell = Cell.cubic(4.0786, lattice_type="F")
         config = cell.build_calibrant_config(dmin=1.0)
-        config.eos = PVT(Vinet(k0=167.0, k0p=6.0),
-                         VolumeExpansion([4.26e-5]),
-                         v0=cell.volume)
+        config.eos = ThermalPressure(Vinet(k0=167.0, k0p=6.0),
+                                     VolumeExpansion([4.26e-5], t0=JCPDS_T_REF),
+                                     v0=cell.volume)
         text = config.to_JCPDS()
         self.assertIn("EOS: VINET", text)
         fname = os.path.join(UtilsTest.tempdir, "Au_vinet.jcpds")
@@ -994,6 +1061,7 @@ def suite():
     testsuite.addTest(loader(TestLatticeExpansion))
     testsuite.addTest(loader(TestMurnaghan))
     testsuite.addTest(loader(TestPVT))
+    testsuite.addTest(loader(TestThermalPressure))
     testsuite.addTest(loader(TestMieGruneisenDebye))
     testsuite.addTest(loader(TestVolumeExpansion))
     testsuite.addTest(loader(TestJCPDS))

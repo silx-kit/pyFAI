@@ -15,8 +15,8 @@ Change-log of versions
   * `Integrate2dResult.rebin1d()` gains `radial_range` and `azimuth_range`, to extract the pattern of an azimuthal sector out of a single 2D integration (#2961)
   * Equations of state of calibrants, in `pyFAI.crystallography.eos`: the d-spacings can be recalculated at the pressure and temperature
     of the experiment, and a calibrant can be used as pressure gauge or as thermometer (#2371).
-    Models: Vinet, Birch-Murnaghan, Murnaghan, thermal expansion, P-V-T composite and (expanded) Mie-Grüneisen-Debye (Dorogokupets & Dewaele, 2007).
-  * Read and write JCPDS (version 4) files, with the equation of state, and a set of cards for Au, Pt, NaCl and Ne taken from the literature.
+    Models: Vinet, Birch-Murnaghan, Murnaghan, thermal expansion, P-V-T composite, thermal pressure (JCPDS/Dioptas) and (expanded) Mie-Grüneisen-Debye (Dorogokupets & Dewaele, 2007).
+  * Read and write JCPDS (version 4) files, with the equation of state interpreted as in Dioptas, and a set of cards for Au, Pt, Rh, Re, W, Ta, Cu, Al, Fe, Al2O3, NaCl, Ne, Kr and Xe taken from the literature.
 
 - Bug fixes:
 

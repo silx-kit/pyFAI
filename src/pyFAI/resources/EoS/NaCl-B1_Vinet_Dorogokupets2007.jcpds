@@ -3,7 +3,7 @@ COMMENT: NaCl-B1 (rock salt), Fm-3m - Dorogokupets & Dewaele (2007) High Press. 
 COMMENT: Vinet fit at 298.15 K, V0=27.015 cm3/mol (table 1), Z=4
 COMMENT: WARNING: the EOS keyword is a pyFAI extension, other programs read K0/K0P as Birch-Murnaghan
 COMMENT: Thermal model of the source: expanded Mie-Gruneisen-Debye, theta0=270 K, gamma0=1.64, gamma_inf=1.12, beta=4.36, a=-24.0e-6 /K, m=7.02
-COMMENT: ALPHAT, DALPHADT, DK0DT, DK0PDT fitted on this model at 0 GPa between 298 and 1000 K: temperature within 4.9 K at 0 GPa, pressure within 0.7 GPa down to V/V0=0.8 up to 1000 K
+COMMENT: ALPHAT, DALPHADT, DK0DT, DK0PDT fitted on this model (thermal pressure, as in Dioptas) between 298 and 1000 K, from 0 GPa down to V/V0=0.8: pressure within 0.02 GPa, temperature within 2.2 K at 0 GPa
 COMMENT: Intensities calculated (Cu Ka, Cromer-Mann form factors, no thermal factor)
 K0:        23.830
 K0P:       5.090
@@ -11,10 +11,10 @@ EOS:       VINET
 SYMMETRY:  CUBIC
 A:         5.64033
 VOLUME:    179.4379
-DK0DT:     -1.6161e-02
-DK0PDT:    2.1953e-03
-ALPHAT:    1.1195e-04
-DALPHADT:  7.6036e-08
+DK0DT:     -1.8173e-04
+DK0PDT:    1.5685e-04
+ALPHAT:    1.2052e-04
+DALPHADT:  -3.3679e-09
 DIHKL:       3.2564     8.1   1   1   1
 DIHKL:       2.8202   100.0   2   0   0
 DIHKL:       1.9942    65.8   2   2   0

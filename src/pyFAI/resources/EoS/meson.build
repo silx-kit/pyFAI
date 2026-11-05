@@ -1,5 +1,7 @@
 py.install_sources(
-   ['Au_Vinet_Tsuchiya2003.jcpds',
+   ['Al_Vinet_Dewaele2004.jcpds',
+    'Al2O3_Vinet_Dewaele2013.jcpds',
+    'Au_Vinet_Tsuchiya2003.jcpds',
     'Au_BM3_Fei2007.jcpds',
     'Au_Vinet_Fei2007.jcpds',
     'Au_Vinet_Ye2017.jcpds',
@@ -9,11 +11,23 @@ py.install_sources(
     'NaCl-B2_Vinet_Fei2007.jcpds',
     'NaCl-B2_Vinet_Dorogokupets2007.jcpds',
     'Ne_BM3_Fei2007.jcpds',
+    'Cu_Vinet_Dewaele2004.jcpds',
+    'Fe-hcp_BM3_Miozzi2020.jcpds',
+    'Fe-hcp_Vinet_Miozzi2020.jcpds',
+    'Kr-fcc_BM3_Rosa2018.jcpds',
     'Ne_Vinet_Fei2007.jcpds',
     'Pt_BM3_Fei2007.jcpds',
     'Pt_Vinet_Fei2007.jcpds',
     'Pt_Vinet_Ye2017.jcpds',
-    'Pt_Vinet_Dorogokupets2007.jcpds'],
+    'Pt_Vinet_Dorogokupets2007.jcpds',
+    'Re_Vinet_Anzellini2014.jcpds',
+    'Rh_BM3_McHardy2024.jcpds',
+    'Rh_Vinet_McHardy2024.jcpds',
+    'Ta_Vinet_Dewaele2004.jcpds',
+    'W_Vinet_Ding2025.jcpds',
+    'W_Vinet_Dewaele2004.jcpds',
+    'Xe-fcc_Vinet_Rosa2022.jcpds',
+    'Xe-hcp_Vinet_Rosa2022.jcpds'],
   pure: false,   # Will be installed next to binaries
   subdir: 'pyFAI/resources/EoS'  # Folder relative to site-packages to install to
 )
