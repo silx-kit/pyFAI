@@ -1,0 +1,19 @@
+VERSION:   4
+COMMENT: Copper (Cu), Fm-3m - Dewaele et al. (2004) Phys. Rev. B 70, 094112, doi:10.1103/PhysRevB.70.094112, table II
+COMMENT: Vinet fit at room temperature up to 153 GPa (He medium), V0=11.810 A3/atom, K0 fixed to the ultrasonic value 133 GPa, K0P=5.30(2) on the ruby scale of the same study (P'R)
+COMMENT: Free fit on the same scale: K0=132.4(1.4) GPa, K0P=5.32(6)
+COMMENT: WARNING: the EOS keyword is a pyFAI extension, other programs read K0/K0P as Birch-Murnaghan
+COMMENT: No thermal model in the source
+COMMENT: Intensities calculated (Cu Ka, Cromer-Mann form factor of Cl used for Cu, no thermal factor)
+K0:        133.000
+K0P:       5.300
+EOS:       VINET
+SYMMETRY:  CUBIC
+A:         3.61496
+VOLUME:    47.2400
+DIHKL:       2.0871   100.0   1   1   1
+DIHKL:       1.8075    45.1   2   0   0
+DIHKL:       1.2781    26.6   2   2   0
+DIHKL:       1.0900    34.5   3   1   1
+DIHKL:       1.0435    10.7   2   2   2
+DIHKL:       0.9037     8.0   4   0   0

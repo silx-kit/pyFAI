@@ -1,0 +1,21 @@
+VERSION:   4
+COMMENT: Gold (Au), Fm-3m - Ye et al. (2017) J. Geophys. Res. Solid Earth 122, 3450-3464, doi:10.1002/2016JB013811, table 1
+COMMENT: Vinet fit at 300 K on the MgO-D07 scale, K0 fixed (K0P=5.813(22) on the Pt-D07 scale)
+COMMENT: V0 and K0 fixed by Ye et al. to Dorogokupets & Dewaele (2007) High Press. Res. 27, 431-446, doi:10.1080/08957950701659700
+COMMENT: Its table 1 confirms K0 but gives no V0 for Au and Pt: V0 from Dewaele et al. (2004) Phys. Rev. B 70, 094112, doi:10.1103/PhysRevB.70.094112, table II (per atom x4)
+COMMENT: WARNING: the EOS keyword is a pyFAI extension, other programs read K0/K0P as Birch-Murnaghan
+COMMENT: Intensities calculated (Cu Ka, Cromer-Mann form factors, no thermal factor)
+K0:        167.000
+K0P:       5.897
+EOS:       VINET
+SYMMETRY:  CUBIC
+A:         4.07861
+VOLUME:    67.8480
+DIHKL:       2.3548   100.0   1   1   1
+DIHKL:       2.0393    49.4   2   0   0
+DIHKL:       1.4420    33.0   2   2   0
+DIHKL:       1.2297    39.8   3   1   1
+DIHKL:       1.1774    11.7   2   2   2
+DIHKL:       1.0197     6.5   4   0   0
+DIHKL:       0.9357    25.5   3   3   1
+DIHKL:       0.9120    26.2   4   2   0
