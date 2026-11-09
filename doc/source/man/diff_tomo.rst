@@ -36,7 +36,7 @@ Options:
    HDF5 File where processed sinogram was saved, by default diff_tomo.h5
 
 **-v**, **--verbose**
-   switch to verbose/debug mode, defaut: quiet
+   switch to verbose/debug mode, default: quiet
 
 **-P** FILE, **--prefix** FILE
    Prefix or common base for all files

@@ -78,12 +78,12 @@ About Microsoft Visual Studio Compiler
 ......................................
 
 PyFAI contains some extensions (binary modules) making use of assembly code ...
-and the assembly used by ``MSVC`` differs from the une used by ``gcc`` or ``clang``,
+and the assembly used by ``MSVC`` differs from the one used by ``gcc`` or ``clang``,
 thus those extensions won't build with alternative compilers.
 
 If you wish to use pyFAI under Windows with an alternative compiler,
 please open an issue in the GitHub tracker.
-Solutions exist but they all represent a substential amount of work !
+Solutions exist but they all represent a substantial amount of work !
 
 
 Side-by-side error

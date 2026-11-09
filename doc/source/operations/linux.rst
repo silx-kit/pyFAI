@@ -6,7 +6,7 @@
 Installation procedure on Linux
 ===============================
 
-We cover first Debian-like distribution, then a generic recipie for all other
+We cover first Debian-like distribution, then a generic recipe for all other
 version is given.
 
 Installation procedure on Debian/Ubuntu
@@ -58,14 +58,14 @@ One can also built the current development version from sources:
    ./build-deb.sh --install
 
 
-The first line installes all the dependences for building
+The first line installs all the dependencies for building
 *debian* package, including debug and documentation.
 The build procedure last for a few minutes and you will be prompted for your
 password in order to install the freshly built packages.
 The *deb-*files, available in the *package* directory are backports for your local
 installation.
 
-Installation procedure on other linux distibution
+Installation procedure on other linux distribution
 -------------------------------------------------
 
 If your distribution does not provide you pyFAI packages, using the **PIP** way
@@ -90,4 +90,4 @@ Or you can install pyFAI from the sources:
    pip install -r requirements.txt
    pip install . --upgrade
 
-**Nota:** One should never use *sudo pip* as it is likely to interfer with the software installed with the system.
+**Nota:** One should never use *sudo pip* as it is likely to interfere with the software installed with the system.

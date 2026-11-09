@@ -54,7 +54,7 @@ The object is saved in a PONI-file, see :ref:`Geometry`
 
 Image
 =====
-2D array of pixels which intensity is proportionnal to the number of photons.
+2D array of pixels which intensity is proportional to the number of photons.
 see :ref:`Image`
 
 PONI

@@ -29,7 +29,7 @@ Options:
 usage: MX-Calibrate -w 1.54 -c CeO2 file1.cbf file2.cbf ...
 
 Calibrate automatically a set of frames taken at various sample-detector
-distance. Return the linear regression of the fit in funtion of the sample-
+distance. Return the linear regression of the fit in function of the sample-
 detector distance.
 
 Options:

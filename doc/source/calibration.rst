@@ -29,7 +29,7 @@ parameters is highly reduced and we believe this helps performing better
 science with fewer mistakes.
 
 While entering the geometry of the experiment in a poni-file is possible, it is
-easier to perform a calibration, using the Debye-Sherrer rings of a reference
+easier to perform a calibration, using the Debye-Scherrer rings of a reference
 sample called calibrant.
 About 30 calibrants are provided by pyFAI like :math:`LaB_6`, ceria :math:`CeO_2`,
 silicon, corrundum or silver behenate.
@@ -60,7 +60,7 @@ its documentation available in the :ref:`manpage`.
 
 To start the calibration the *pyFAI-calib* tool will need:
 
-* an image with Debye-Sherrer rings
+* an image with Debye-Scherrer rings
 * the energy or the wavelength
 * the calibrant name or the d-spacing file of the calibrant
 * the detector description.

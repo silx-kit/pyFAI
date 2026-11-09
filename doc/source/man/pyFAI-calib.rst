@@ -6,7 +6,7 @@ Purpose
 
 
 
-Calibrate the diffraction setup geometry based on Debye-Sherrer rings
+Calibrate the diffraction setup geometry based on Debye-Scherrer rings
 images without a priori knowledge of your setup. You will need to
 provide a calibrant or a "d-spacing" file containing the spacing of
 Miller plans in Angstrom (in decreasing order).
