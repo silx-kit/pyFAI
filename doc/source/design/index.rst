@@ -25,7 +25,7 @@ I would describe it as a stack of 5 layers, upper ones relying on lower ones:
 0. Common basement: Python, Numpy, Cython, PyOpenCL and silx
 
 At level 5. are easy-to use applications, requiring no specific computing knowledge.
-Levels 3. and 2. are heavily described in tutorials and should be accesible to
+Levels 3. and 2. are heavily described in tutorials and should be accessible to
 any Pythonistas. We try to keep the API on those levels consistent between versions.
 Level 1. is often written in Cython, or OpenCL and requires low-level expertise.
 

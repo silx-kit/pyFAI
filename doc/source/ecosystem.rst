@@ -9,7 +9,7 @@ Software pyFAI is relying on:
 -----------------------------
 
 PyFAI is relying on the full Python scientific stack which includes [NumPy]_,
-[SciPy]_, [Matplotlib]_, [PyOpenCL]_ but also on some ESRF-developped code:
+[SciPy]_, [Matplotlib]_, [PyOpenCL]_ but also on some ESRF-developed code:
 
 FabIO
 .....
@@ -29,7 +29,7 @@ Program using pyFAI as a library
 --------------------------------
 
 `Github keeps track of dependant projects <https://github.com/silx-kit/pyFAI/network/dependents>`_ and 60 open source projects are
-explicitely dependant on pyFAI.
+explicitly dependant on pyFAI.
 Those include data analysis in most synchrotrons in the world (NSLS-II, APS ...) but also on Free electron laser facilities and in electron microscopy.
 Here is a list of friendly projects which developpers contributed back to pyFAI:
 
@@ -106,7 +106,7 @@ The server is running 24x7 with a processing frequency from 0.1 to 10 Hz.
 LImA
 ....
 The `Library for Image Acquisition <https://github.com/esrf-bliss/Lima>`_,
-developped at the European synchrotron is used worldwide to control any types of
+developed at the European synchrotron is used worldwide to control any types of
 cameras.
 A pyFAI plugin has been written to integrate images on the fly without saving them.
 (no more tested).
@@ -115,7 +115,7 @@ A pyFAI plugin has been written to integrate images on the fly without saving th
 NanoPeakCell
 ............
 NanoPeakCell (NPC) is a python-software intended to pre-process your serial
-crystallography raw-data into ready-to-be-inedexed images with CrystFEL,
+crystallography raw-data into ready-to-be-indexed images with CrystFEL,
 cctbx.xfel and nXDS.
 NPC is able to process data recorded at SACLA and LCLS XFELS, as well as data
 recorded at any synchrotron beamline.
@@ -127,7 +127,7 @@ pygix
 .....
 
 A Python library for reduction of 2D grazing-incidence X-ray scattering
-data developped at ESRF (ID13) by Thomas DANE.
+data developed at ESRF (ID13) by Thomas DANE.
 
 Grazing-incidence X-ray scattering techniques (GISAXS, GIWAXS/GID)
 allow the study of thin films on surfaces that would otherwise be

@@ -18,7 +18,7 @@ This program requires OpenCL. The device needs be properly selected.
 Usage:
 ------
 
-spasify-Bragg [-h] [-V] [-v] [--debug] [--profile] [-o OUTPUT]
+sparsify-Bragg [-h] [-V] [-v] [--debug] [--profile] [-o OUTPUT]
 [--save-source] [--grid-size GRID_SIZE GRID_SIZE]
 [--zig-zag] [-b BEAMLINE] [-p PONI] [-m MASK] [--dummy DUMMY]
 [--delta-dummy DELTA_DUMMY]
@@ -73,7 +73,7 @@ Experimental setup options:
 ---------------------------
 
 **-b** BEAMLINE, **--beamline** BEAMLINE
-   Name of the instument (for the HDF5 NXinstrument)
+   Name of the instrument (for the HDF5 NXinstrument)
 
 **-p** PONI, **--poni** PONI
    geometry description file

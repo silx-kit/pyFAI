@@ -62,7 +62,7 @@ support for OpenMP.
 
 There are two ways to compile pyFAI on MacOSX:
 
-* Using *Xcode* which desctivates OpenMP
+* Using *Xcode* which deactivates OpenMP
 * Using another compiler which supports OpenMP
 
 Using Xcode
@@ -72,7 +72,7 @@ To build pyFAI from sources, a C-compiler is needed.
 On an *Apple* computer, the default compiler is
 `Xcode <https://developer.apple.com/xcode/>`_, and it is available for free on
 the **AppStore**.
-The absence of OpenMP is mitigated on Apple computer by the support of OpenCL which provied parallel intgeration.
+The absence of OpenMP is mitigated on Apple computer by the support of OpenCL which provides parallel integration.
 
 Using **gcc** or **clang**
 ..........................

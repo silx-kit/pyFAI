@@ -1,7 +1,7 @@
 :Author: Jérôme Kieffer
 :Date: 12/07/2022
 :Keywords: average sigma uncertainties standard-deviation standard-error-of-the-mean std sem
-:Target: General audiance
+:Target: General audience
 
 Weighted average and uncertainty propagation
 ============================================
@@ -11,14 +11,14 @@ While the mean is fairly straight forward, there is a lot discussed on uncertain
 there are several uncertainties and different models to calculate them.
 
 Naively, most people would expect the azimuthal average to be the average of the signal of each pixel from
-the image which position correspon to a given bin.
+the image which position corresponds to a given bin.
 
 Usually this pixel needs to be corrected for some dark-current (often in the case of an integrating detector) and for several normalization effects like:
 
 * Flat-Field of the detector: each pixel can respond more or less efficiently compared to its neighbors (:math:`F`)
 * Polarization effect: the beam used at synchrotron is heavily polarized and some direction will see more signal than others (:math:`P`)
-* Solid-angle: Pixel which see the beam arriving with a heavy inclinasion recieve less photons (:math:`\Omega`)
-* Absorption-effect, also refered to as parallax effect or thickness effect: very inclined beam passes through a longer sensor length, thus are likely to have a better detection of photons (:math:`A`)
+* Solid-angle: Pixel which see the beam arriving with a heavy inclination receive less photons (:math:`\Omega`)
+* Absorption-effect, also referred to as parallax effect or thickness effect: very inclined beam passes through a longer sensor length, thus are likely to have a better detection of photons (:math:`A`)
 * Normalization: The user may want to scale the signal, for example to have it in absolute units, directly useable in subsequent analysis (:math:`I_0`). This value being constant among the pixel, it can be moved freele in equations unlike the 4 others.
 
 This can be summarized as:
@@ -31,9 +31,9 @@ To simplify the notation, we will assign :math:`signal=I_{raw} - I_{dark}` and :
 
 Azimuthal average
 -----------------
-As stated in the introduction, the arithmetic average of the normalized pixel values :math:`I_{cor}` is not the proper average since some pixels are weighted more than others, thus a weigted average is needed.
+As stated in the introduction, the arithmetic average of the normalized pixel values :math:`I_{cor}` is not the proper average since some pixels are weighted more than others, thus a weighted average is needed.
 
-In case of pixel splitting, a single pixel can contribute to serveral azimuthal bins.
+In case of pixel splitting, a single pixel can contribute to several azimuthal bins.
 Let :math:`c_{i,r}` be the contribution of pixel :math:`i` to the bin :math:`r`.
 All those contributions are positive and sum up to one (the pixel is completely taken into account):
 
@@ -76,7 +76,7 @@ Four different accumulators are used in pyFAI for azimuthal integration to simpl
     \Omega\Omega_A = \sum\limits_{i \in A} c_{i,r}^2 \cdot normalization_i^2
 
 Those *accumulators* are inspired by `Schubert & Gertz (2018) <https://dbs.ifi.uni-heidelberg.de/files/Team/eschubert/publications/SSDBM18-covariance-authorcopy.pdf>`_
-but due to different convention on weights considering the variance, their formula (eq22) for variance propagaion does not match ours.
+but due to different convention on weights considering the variance, their formula (eq22) for variance propagation does not match ours.
 Those accumulator are summing over an ensemble :math:`A` and are designed for parallel reduction by regrouping ensembles:
 
 .. math::
@@ -90,8 +90,8 @@ Those accumulator are summing over an ensemble :math:`A` and are designed for pa
 Uncertainties
 -------------
 
-One should distinguish two types of uncertainties: the uncertainties on the mean value, often called *standard error of the mean* and abreviated *sem*,
-from the *standard deviation* which is abreviated *std*
+One should distinguish two types of uncertainties: the uncertainties on the mean value, often called *standard error of the mean* and abbreviated *sem*,
+from the *standard deviation* which is abbreviated *std*
 
 Standard deviation
 ++++++++++++++++++
@@ -108,7 +108,7 @@ The numerical value can be retrieved from an azimuthal-integration result with t
 Standard error of the mean
 ++++++++++++++++++++++++++
 
-As the name states, this uncertainty correspond to the precision with wich one knows the mean value and this is the *sigma* reported by pyFAI by default.
+As the name states, this uncertainty correspond to the precision with which one knows the mean value and this is the *sigma* reported by pyFAI by default.
 
 .. math::
 
@@ -122,7 +122,7 @@ Uncertainties propagated from known variance
 ++++++++++++++++++++++++++++++++++++++++++++
 
 Sometimes variance can be modeled and the array VV can be calculated directly.
-Very often the variance formula is based on asumption that the distribution is Poissonian (i.e. variance_i = max(1, signal_i)) which, after normalization, becomes :math:`\sigma_i^2 = max(1, signal_i)/ \cdot normalization_i^2`, thus:
+Very often the variance formula is based on assumption that the distribution is Poissonian (i.e. variance_i = max(1, signal_i)) which, after normalization, becomes :math:`\sigma_i^2 = max(1, signal_i)/ \cdot normalization_i^2`, thus:
 
 .. math::
 

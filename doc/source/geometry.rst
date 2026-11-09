@@ -31,12 +31,12 @@ But data can also be extracted from HDF5 files with h5py and displayed using mat
    imshow(data, origin="lower")
 
 Because Python is written in C language, data are stored lines by lines, this means to go
-from a pixel to the on its right, one offets the position by the pixel width.
+from a pixel to the on its right, one offsets the position by the pixel width.
 To go the pixel above the current one, on needs to offset by the length of the line.
 This is why, if one considers the pixel at position (x,y), its value can be retrieved by data[y,x]
 (note the order y,x, this is not a bug!).
 We usually refer the *x* axis as the fast dimension (because pixels are adjacent) and the *y* axis
-as the slow axis (as pixel are appart from each other by a line length).
+as the slow axis (as pixel are apart from each other by a line length).
 More information on how `numpy array are stored can be found at here <https://github.com/numpy/numpy/blob/master/doc/source/reference/arrays.ndarray.rst>`_
 
 Like most scientific packages, the origin of the image is considered
@@ -76,7 +76,7 @@ In the (most common) case of *transmission diffraction setup* on synchrotrons
 Axis 3 is built in such a way to be orthogonal to the plane  (1,2).
 Due to constraints on the origin and orientation of the azimuthal angle, chi,
 (1, 2, 3) is indirect orientation.
-This makes usually the PONI position with negative third coordiante (at z<0).
+This makes usually the PONI position with negative third coordinate (at z<0).
 
 .. _Geometry:
 

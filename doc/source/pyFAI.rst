@@ -1,7 +1,7 @@
 :Author: Jérôme Kieffer
 :Date: 24/06/2022
 :Keywords: generic description of the software
-:Target: General audiance
+:Target: General audience
 
 General introduction
 ====================
@@ -57,7 +57,7 @@ limits owing to the fast data rate needed by such experiments. Even when
 integrated into massively parallel frameworks like [EDNA]_ , such
 stand-alone programs, due to their monolithic nature, cannot keep the
 pace with the data flow of new detectors. Therefore we decided to
-implemente from scratch a novel azimuthal integration tool which is
+implemented from scratch a novel azimuthal integration tool which is
 designed to take advantage of modern parallel hardware features.
 PyFAI assumes the setup does not change during the experiment and tries to reuse
 a maximum number of data (using memoization_), moreover those calculation are performed
@@ -192,7 +192,7 @@ The drawback of this is the correlation introduced between two adjacent bins.
 To simplify
 calculations, this was initially done by abstracting the pixel shape
 with a bounding box that circumscribes the pixel. In an effort to better
-the quality of the results this method was dropped in favoor of a full
+the quality of the results this method was dropped in favour of a full
 pixel splitting scheme that actually uses the actual pixel geometry
 for its calculations.
 

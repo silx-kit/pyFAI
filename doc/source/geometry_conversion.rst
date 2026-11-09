@@ -361,7 +361,7 @@ Pixel size:
 
 Detector flip matrix:
     :math:`O = \begin{bmatrix} o_{11} & o_{12} \\ o_{21} & o_{22} \end{bmatrix}`.
-    This matrix takes care ofcorrecting typical problems with the way pixel coordinates are
+    This matrix takes care of correcting typical problems with the way pixel coordinates are
     arranged on the detector. If, e.g., the detector is rotated by
     :math:`90^{\circ}`, then
     :math:`O=\begin{bmatrix} 0 & 1 \\ -1 & 0\end{bmatrix}`.

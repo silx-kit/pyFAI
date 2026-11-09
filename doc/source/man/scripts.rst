@@ -8,7 +8,7 @@
 Application manuals
 ===================
 
-While pyFAI was first developped as a Python library to be used by developers, it evolved
+While pyFAI was first developed as a Python library to be used by developers, it evolved
 with applications allowing to analyse a full diffraction experiment without knowing anything about Python.
 Those scripts can be divided into 3 categories:
 
@@ -17,7 +17,7 @@ Those scripts can be divided into 3 categories:
  - Calibration tools which aim at the determination of the geometry of the experimental setup using Debye-Scherrer rings
    of a reference compound (or calibrant). They produce a `PONI-file` which contains this geometry
 
- - Integration tools which can reduce a full dataset using 1d or 2d integration, optionnally rebuiling images.
+ - Integration tools which can reduce a full dataset using 1d or 2d integration, optionally rebuilding images.
 
 Pre-processing tools:
  - ``pyFAI-average``: tool for averaging/median/... filtering stacks of images (i.e. for dark current)

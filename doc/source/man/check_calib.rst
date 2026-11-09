@@ -1,7 +1,7 @@
 Calibration tool: check_calib
 =============================
 
-check_calib - DEPRECATED tool that checks a calibratation at the
+check_calib - DEPRECATED tool that checks a calibration at the
 sub-pixel level
 
 Purpose

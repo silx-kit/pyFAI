@@ -22,7 +22,7 @@ On the left-hand side, the user can select a bunch of files to be processed.
 For now, any image format supported by FabIO is possible, including multi-frame
 images, but not ye NeXus files (work ongoing).
 
-On the right-hand side, the motor range can be specified togeather with their
+On the right-hand side, the motor range can be specified together with their
 names. The diffraction parameters can be setup in a similar way to *pyFAI-integrate*.
 The output name can also be specified.
 
@@ -33,7 +33,7 @@ The output name can also be specified.
 The processing is launched using the *Run* button which opens a matplotlib figure
 to display the plot of the diffraction pattern and of the map image under
 construction.
-During this processing, one can select a scatering range to highlight the regions
+During this processing, one can select a scattering range to highlight the regions
 of interest.
 
 .. figure:: ../img/diffmap_running.png
