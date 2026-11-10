@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/09/2026"
+__date__ = "10/11/2026"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -384,6 +384,30 @@ class Integrator(Geometry):
         else:
             solidangle_crc = solidangle = None
         return (solidangle, solidangle_crc)
+
+    def _normalize_absorption(self, shape:tuple, correct_absorption:bool|None=None, absorption:numpy.ndarray|None=None) -> tuple:
+        """
+        Requests the absorption array (efficiency of the sensor) with its checksum.
+
+        :param shape: shape of the image
+        :param correct_absorption: None (default) corrects when the parallax is activated,
+                                   True forces the correction, False disables it.
+        :param absorption: array provided by the user, used as such
+        :return: 2-tuple with the array and its checksum (None, None if not corrected)
+        """
+        if absorption is not None:
+            return (absorption, None)
+        if correct_absorption is None:
+            correct_absorption = self._parallax is not None
+        if not correct_absorption:
+            return (None, None)
+        result = self.sensor_efficiency(shape, with_checksum=True)
+        if result is None:
+            if self._parallax is None:  # correction explicitly requested, else we would not be here
+                logger.warning("Absorption correction requested but the sensor is unknown: "
+                               "enable the parallax or provide the efficiency with set_sensor_efficiency")
+            return (None, None)
+        return result
 
     def _normalize_polarization(self, shape:tuple, polarization_factor:float=None, with_checksum:bool=True) -> tuple:
         """
