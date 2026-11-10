@@ -1751,6 +1751,7 @@ class AzimuthalIntegrator(Integrator):
                    dark=None,
                    flat=None,
                    absorption=None,
+                   correct_absorption=None,
                    method=("no", "csr", "cython"),
                    unit=units.Q,
                    thres=5.0,
@@ -1791,7 +1792,10 @@ class AzimuthalIntegrator(Integrator):
 
         :param ndarray dark: dark noise image
         :param ndarray flat: flat field image
-        :param ndarray absorption: Detector absorption (image)
+        :param ndarray absorption: absorption correction image (efficiency of the sensor), used as such
+        :param bool correct_absorption: correct for the efficiency of the sensor (see `sensor_efficiency`).
+               None (default) corrects when the parallax is activated, True forces the correction
+               (the efficiency has to be known: parallax or `set_sensor_efficiency`), False disables it.
         :param ndarray variance: the variance of the signal
         :param str error_model: can be "poisson" to assume a poissonian detector (variance=I) or "azimuthal" to take the std² in each ring (better, more expenive)
         :param unit: unit to be used for integration
@@ -1810,7 +1814,9 @@ class AzimuthalIntegrator(Integrator):
         The standard deviation is usually smaller than previously and the signal cleaner.
         It is also slightly faster.
 
-        The case neither `error_model`, nor `variance` is provided, fall-back on a poissonian model.
+        The sigma-clipping needs the variance.
+        The case neither `error_model`, nor `variance` is provided, fall-back on a poissonian model
+        and a warning is issued: this is only valid for a detector counting photons, image not normalized.
 
         """
         for k in kwargs:
@@ -1824,6 +1830,11 @@ class AzimuthalIntegrator(Integrator):
             if variance.size != data.size:
                 raise RuntimeError("variance array shape does not match data shape")
             error_model = ErrorModel.VARIANCE
+        if not error_model.do_variance:
+            logger.warning("sigma_clip: NEITHER `error_model` NOR `variance` PROVIDED: the variance cannot be determined, "
+                           "falling back on a POISSONIAN model. This is only valid for raw photon counts, "
+                           "otherwise THE RESULTS ARE WRONG. Provide `error_model` or `variance` explicitly.")
+            error_model = ErrorModel.POISSON
 
         unit = units.to_unit(unit)
         if radial_range:
@@ -1884,6 +1895,8 @@ class AzimuthalIntegrator(Integrator):
             polarization = _polarization_crc = None
         else:
             polarization, _polarization_crc = self.polarization(data.shape, polarization_factor, with_checksum=True)
+
+        absorption, _absorption_crc = self._normalize_absorption(data.shape, correct_absorption, absorption)
 
         if (method.algo_lower == "csr"):
             "This is the only method implemented for now ..."
