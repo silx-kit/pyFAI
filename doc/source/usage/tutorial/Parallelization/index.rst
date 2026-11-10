@@ -32,7 +32,7 @@ speed-up then stagnates: 30x speed up is measured on 2x32core.
 2. Multiprocessing: This is known to be efficient under Linux thanks to
 the `fork` mechanism but one has to use `spawn`, like under Windows to
 be compatible with GPU processing. One GPU can host up to 15 parallel instances.
-This method does not yet have a tutorial to dmonstrate it.
+This method does not yet have a tutorial to demonstrate it.
 
 3. Full GPU processing: this requires the hardware (starts ~10k€) and
 some software blocks like the LZ4 decompression, the bitshuffling and

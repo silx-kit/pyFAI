@@ -9,7 +9,7 @@
 Fast Azimuthal Integration using Python
 =======================================
 
-PyFAI is a python libary for azimuthal integration of X-ray/neutron/electron scattering data acquired with area detectors.
+PyFAI is a python library for azimuthal integration of X-ray/neutron/electron scattering data acquired with area detectors.
 For this, images needs to be re-binned in polar coordinate systems.
 Additional tools are provided to calibrate the experimental setup, i.e. define where the detector is positioned in space considering the sample and the incident beam.
 
@@ -35,7 +35,7 @@ The geometry used is described in this scheme:
    :alt: The geometry used in pyFAI defined by 3 distances (in meter):
          the sample detector distance (normal, not along the beam),
          the coordinates of the orthogonal projection of the sample on the detector (called PONI)
-         and 3 rotations (in radians) around the vertical, horzontal and incident beam (also horzontal)
+         and 3 rotations (in radians) around the vertical, horizontal and incident beam (also horizontal)
 
 
 
@@ -47,10 +47,10 @@ Pixel splitting schemes are also explained there.
 
 The second part is about how to use pyFAI, it starts with the typical usage on the command line
 in the *cookbooks* section and advanced usage from the Python interface is explained in the *tutorials* section
-wich describes some parts of the internal mechanics.
+which describes some parts of the internal mechanics.
 Finally, the manual pages of applications and the description of the programming interface (API) are appended.
 Despite the installation section could be as simple a:
-``pip install pyFAI``, full instructions for the installation are also provided, addressing platorm specific issues.
+``pip install pyFAI``, full instructions for the installation are also provided, addressing platform specific issues.
 
 .. toctree::
    :maxdepth: 1

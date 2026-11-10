@@ -13,7 +13,7 @@ Peaks are always seen as positive outliers on top of background noise or
 amorphous signal.
 The calculation of the background has gradually improved over time:
 
-Initially, it was a median filter on the azimuthal direction after a 2D intergation.
+Initially, it was a median filter on the azimuthal direction after a 2D integration.
 The obtained background curve was often noisy.
 This median filter has been replaced by a sigma-clipping to enforce a normal
 distribution of the background.

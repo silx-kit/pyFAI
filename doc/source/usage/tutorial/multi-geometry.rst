@@ -32,7 +32,7 @@ How it works
 
 Lets assume you are able to know where your detector is in space, either
 calibrated, either calculated from the goniometer position.
-A diffrection image (img_i) has been acquired using a geometry which is stored
+A diffraction image (img_i) has been acquired using a geometry which is stored
 in a poni-file (poni_i) useable by pyFAI.
 
 To define a multi-geometry integrator, one needs all poni-files and one needs
@@ -81,4 +81,4 @@ Conclusion
 
 MultiGeometry is a unique feature of PyFAI ...
 While extremely powerful, it need
-careful understanding of the numerical treatement going on underneath.
+careful understanding of the numerical treatment going on underneath.

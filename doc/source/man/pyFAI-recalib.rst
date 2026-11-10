@@ -13,7 +13,7 @@ DESCRIPTION
 usage: pyFAI-recalib [options] **-i** ponifile **-w** 1 **-c**
 calibrant.D imagefile.edf
 
-Calibrate the diffraction setup geometry based on Debye-Sherrer rings
+Calibrate the diffraction setup geometry based on Debye-Scherrer rings
 images with a priori knowledge of your setup (an input PONI-file). You
 will need to provide a calibrant or a "d-spacing" file containing the
 spacing of Miller plans in Angstrom (in decreasing order). Calibrants
@@ -193,14 +193,14 @@ optional arguments:
 The main difference with pyFAI-calib is the way control-point hence
 DebyeSherrer rings are extracted. While pyFAI-calib relies on the
 contiguity of a region of peaks called massif; pyFAI-recalib knows
-approximatly the geometry and is able to select the region where the
+approximately the geometry and is able to select the region where the
 ring should be. From this region it selects automatically the various
 peaks; making pyFAI-recalib able to run without graphical interface and
 without human intervention (**--no-gui** and **--nointeractive**
 options). Note that \`pyFAI-recalib\` program is obsolete as the same
 functionality is available from within pyFAI-calib, using the
 \`recalib\` command in the refinement process. Two option are available
-for recalib: the numbe of rings to extract (similar to the **-r** option
+for recalib: the number of rings to extract (similar to the **-r** option
 of this program) and a new option which lets you choose between the
 original \`massif\` algorithm and newer ones like \`blob\` and
 \`watershed\` detection.

@@ -60,7 +60,7 @@ Start pyFAI-calib
 
 Use the man page (or --help) to see all options, or go to the :ref:`manpage` section.
 
-Here we just provide the energy, the detector disortion file and the calibrant
+Here we just provide the energy, the detector distortion file and the calibrant
 options in addition to the image file.
 
 .. code-block:: shell

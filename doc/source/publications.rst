@@ -35,7 +35,7 @@ Publications about pyFAI
 + *Application of signal separation to diffraction image compression and serial crystallography*;
   Jérôme Kieffer, Julien Orlans, Nicolas Coquelle, Samuel Debionne, Shibom Basu, Alejandro Homs, Gianluca Santonia and Daniele De Sanctis;
   `Journal of Applied Crystallography (2025) 58 (1), 138-153 <https://doi.org/10.1107/S1600576724011038>`_;
-  In depth explainaion of sigma-clipping background assessment and error models.
+  In depth explanation of sigma-clipping background assessment and error models.
 
 Which one should I cite?
 For the plain application of azimuthal averaging: JAC2015, for the calibration: JSR2020 and for advanced statistical analysis in azimuthal space: JAC2025.

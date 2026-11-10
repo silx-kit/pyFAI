@@ -12,7 +12,7 @@ The performance analysis has to be done on what matters' most for the end user,
 which is often the azimuthal integration step.
 PyFAI features many integrators, many pixel splitting schemes and the best one is not always obvious.
 The :ref:`pyfaibenchmark` tool measures the time to perform the 1D azimuthal integration for images
-between 1 and 16 megapixels and helps the user to take this descision.
+between 1 and 16 megapixels and helps the user to take this decision.
 The pixel splitting scheme used, ``bbox``, is also the default one.
 Other splitting schemes have similar behavior.
 
@@ -36,7 +36,7 @@ Those curves have all hyperbolic shapes, which means that larger images process 
 
 By default, the benchmarking tool probes histogram-, CSC- and CSR- based integrators (precisely ``("bbox", "histogram", "cython")``, ``("bbox", "csc", "cython")``
 and ``("bbox", "csr", "cython")``.
-The 2 formers are single threaded and offers the *worse* performances but it is still much faster than numpy based histograms.
+The first two are single threaded and offers the *worse* performances but it is still much faster than numpy based histograms.
 They are usually the lowest curves.
 
 The CSR-integration is usually faster than the histogram thanks to the multi-threading.

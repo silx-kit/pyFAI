@@ -25,7 +25,7 @@ PyFAI is a Python library which relies on the scientific stack (numpy, scipy, ma
 * Python: version 3.9 or newer
 * NumPy: version 1.12 or newer
 * SciPy: version 0.18 or newer
-* Matplotlib: verson 2.0 or newer
+* Matplotlib: version 2.0 or newer
 * FabIO: version 0.5 or newer
 * h5py: version 2.10 or newer
 * silx: version 2 or newer
@@ -41,7 +41,7 @@ by may impair performances or prevent tools from properly working:
 Build dependencies:
 -------------------
 
-PyFAI v2023.01 intoduced a new build system based on `meson` with the following requirements:
+PyFAI v2023.01 introduced a new build system based on `meson` with the following requirements:
 
 * meson-python (>=0.11)
 * git

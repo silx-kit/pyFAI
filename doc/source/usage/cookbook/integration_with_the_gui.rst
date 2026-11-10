@@ -31,8 +31,8 @@ Integrate a bunch of images
 ---------------------------
 We will work with the 20 images used for the calibration.
 
-Start pyFAI-intgrate
---------------------
+Start pyFAI-integrate
+---------------------
 Either select files to process using the file-dialog or provide
 them on the command line.
 

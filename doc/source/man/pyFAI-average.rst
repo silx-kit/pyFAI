@@ -64,5 +64,5 @@ optional arguments:
    Only error messages are printed out
 
 It can also be used to merge many images from the same sample when using
-a small beam and reduce the spotty-ness of Debye-Sherrer rings. In this
+a small beam and reduce the spotty-ness of Debye-Scherrer rings. In this
 case the "max-filter" is usually recommended.
