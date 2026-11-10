@@ -1036,6 +1036,17 @@ class TestBug2953(unittest.TestCase):
         res = self.ai.medfilt1d_ng(self.img, 100, correct_absorption=False, **kw)
         self.assertGreater(self.spread(res.intensity), 0.05, "correction disabled")
 
+    def test_integrate_radial(self):
+        "point 3: `integrate_radial` follows the same rule; I(chi) is flat here, so the level is checked"
+        kw = {"correctSolidAngle": True, "polarization_factor": 1.0, "radial_unit": "2th_deg",
+              "unit": "chi_deg", "method": ("no", "csr", "cython")}
+        res = self.ai.integrate_radial(self.img, 36, 100, **kw)
+        self.assertAlmostEqual(res.intensity.mean() / 1e5, 1.0, delta=0.01, msg="parallax enabled: corrected by default")
+        res = self.ai.integrate_radial(self.img, 36, 100, correct_absorption=False, **kw)
+        self.assertLess(res.intensity.mean() / 1e5, 0.97, "correction disabled")
+        res = self.ai.integrate_radial(self.img, 36, 100, absorption=self.eta, correct_absorption=False, **kw)
+        self.assertAlmostEqual(res.intensity.mean() / 1e5, 1.0, delta=0.01, msg="explicit array")
+
     def test_sigma_clip(self):
         "point 3: `sigma_clip` follows the same rule for `correct_absorption`"
         # sigma_clip needs an error model to get a meaningful result

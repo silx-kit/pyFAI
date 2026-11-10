@@ -484,6 +484,7 @@ class AzimuthalIntegrator(Integrator):
                          radial_range=None, azimuth_range=None,
                          mask=None, dummy=None, delta_dummy=None,
                          polarization_factor=None, dark=None, flat=None,
+                         absorption=None, correct_absorption=None,
                          method=("bbox", "csr", "cython"), unit=units.CHI_DEG, radial_unit=units.Q,
                          normalization_factor=1.0):
         """Calculate the radial integrated profile curve as I = f(chi)
@@ -506,6 +507,10 @@ class AzimuthalIntegrator(Integrator):
                 * True for using the former correction
         :param ndarray dark: dark noise image
         :param ndarray flat: flat field image
+        :param ndarray absorption: absorption correction image (efficiency of the sensor), used as such
+        :param bool correct_absorption: correct for the efficiency of the sensor (see `sensor_efficiency`).
+               None (default) corrects when the parallax is activated, True forces the correction
+               (the efficiency has to be known: parallax or `set_sensor_efficiency`), False disables it.
         :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :param pyFAI.units.Unit unit: Output units, can be "chi_deg" or "chi_rad"
         :param pyFAI.units.Unit radial_unit: unit used for radial representation, can be "q_nm^-1", "q_A^-1", "2th_deg", "2th_rad", "r_mm" for now
@@ -518,7 +523,9 @@ class AzimuthalIntegrator(Integrator):
                                   correctSolidAngle=correctSolidAngle,
                                   mask=mask, dummy=dummy, delta_dummy=delta_dummy,
                                   polarization_factor=polarization_factor,
-                                  dark=dark, flat=flat, method=method,
+                                  dark=dark, flat=flat,
+                                  absorption=absorption, correct_absorption=correct_absorption,
+                                  method=method,
                                   normalization_factor=normalization_factor,
                                   radial_range=radial_range,
                                   azimuth_range=azimuth_range,
