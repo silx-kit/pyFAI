@@ -38,10 +38,12 @@ __copyright__ = "2015-2025 European Synchrotron Radiation Facility, Grenoble, Fr
 __date__ = "10/11/2026"
 
 import copy
+import json
 import logging
 import os
 import subprocess
 import sys
+import tempfile
 import unittest
 from io import StringIO
 from math import pi
@@ -54,10 +56,12 @@ from .. import detectors, load, units
 from ..detectors import detector_factory, sensors
 from ..ext import splitPixel
 from ..integrator.azimuthal import AzimuthalIntegrator
+from ..io.integration_config import WorkerConfig
 from ..io.ponifile import PoniFile
 from ..multi_geometry import MultiGeometry
 from ..opencl import ocl
 from ..utils import crc32, mathutil
+from ..worker import Worker
 from .utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
@@ -1066,6 +1070,46 @@ class TestBug2953(unittest.TestCase):
         self.assertLess(self.spread(self.profile2d(res)), 0.02, "2D: corrected by default")
         res = mg.integrate2d(imgs, 100, 36, polarization_factor=1.0, correct_absorption=False)
         self.assertGreater(self.spread(self.profile2d(res)), 0.05, "2D: correction disabled")
+
+    def test_worker_config(self):
+        "point 3: `Worker` follows the parallax, and `correct_absorption` is persisted in `WorkerConfig`"
+        worker = Worker(self.ai, shapeIn=self.SHAPE, shapeOut=(1, 100), unit="2th_deg",
+                        method=("no", "csr", "cython"))
+        worker.polarization_factor = 1.0
+        self.assertIsNone(worker.correct_absorption)
+        self.assertLess(self.spread(worker.process(self.img)[:, 1]), 0.02, "parallax enabled: corrected by default")
+        config = worker.get_worker_config()
+        self.assertIsNone(config.correct_absorption)
+
+        def reload(config):
+            "save and reload the configuration, like a JSON file would"
+            with tempfile.TemporaryDirectory() as tmp:
+                filename = os.path.join(tmp, "worker.json")
+                config.save(filename)
+                with open(filename) as fd:
+                    saved = json.load(fd)
+                return saved, WorkerConfig.from_file(filename)
+
+        saved, config = reload(config)
+        self.assertTrue(saved["poni"]["parallax"], "parallax and its sensor are in the poni")
+        new = Worker()
+        new.set_config(config)
+        self.assertIsNotNone(new.ai.parallax, "parallax restored")
+        self.assertLess(self.spread(new.process(self.img)[:, 1]), 0.02, "restored worker corrects")
+
+        worker.correct_absorption = False
+        self.assertGreater(self.spread(worker.process(self.img)[:, 1]), 0.05, "correction disabled")
+        saved, config = reload(worker.get_worker_config())
+        self.assertIs(saved["correct_absorption"], False)
+        new = Worker()
+        new.set_config(config)
+        self.assertIs(new.correct_absorption, False)
+        self.assertGreater(self.spread(new.process(self.img)[:, 1]), 0.05, "disabled correction survives the persistence")
+
+        saved.pop("correct_absorption")  # configuration written before the option existed
+        old = Worker()
+        old.set_config(WorkerConfig.from_dict(saved))
+        self.assertIsNone(old.correct_absorption)
 
     def test_sigma_clip(self):
         "point 3: `sigma_clip` follows the same rule for `correct_absorption`"

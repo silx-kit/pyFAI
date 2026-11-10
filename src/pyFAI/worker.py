@@ -44,7 +44,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/09/2026"
+__date__ = "10/11/2026"
 __status__ = "development"
 
 import json
@@ -209,6 +209,7 @@ class Worker:
         self.dummy = dummy
         self.delta_dummy = delta_dummy
         self.correct_solid_angle = True
+        self.correct_absorption = None  # None: follows the parallax of the integrator
         self.dark_current_image = None
         self.flat_field_image = None
         self.mask_image = None
@@ -236,6 +237,7 @@ class Worker:
                   f"Number of points in azimuthal direction: {self.nbpt_azim}",
                   f"Unit in radial dimension: {self.unit}",
                   f"Correct for solid angle: {self.correct_solid_angle}",
+                  f"Correct for absorption: {self.correct_absorption}",
                   f"Polarization factor: {self.polarization_factor}",
                   f"Dark current image: {self.dark_current_image}",
                   f"Flat field image: {self.flat_field_image}",
@@ -376,6 +378,8 @@ class Worker:
         kwarg["variance"] = variance
         kwarg["dark"] = dark
         kwarg["flat"] = flat
+        if self.correct_absorption is not None:  # else the integrator decides, from its parallax
+            kwarg["correct_absorption"] = self.correct_absorption
         if self.error_model:
             kwarg["error_model"] = self.error_model
 
@@ -515,6 +519,7 @@ class Worker:
         self.azimuth_range = config.azimuth_range
         self.radial_range = config.radial_range
         self.correct_solid_angle = True if config.correct_solid_angle is None else bool(config.correct_solid_angle)
+        self.correct_absorption = None if config.correct_absorption is None else bool(config.correct_absorption)
         self.dummy = config.val_dummy
         self.delta_dummy = config.delta_dummy
         self._normalization_factor = config.normalization_factor
@@ -551,7 +556,7 @@ class Worker:
                               poni=dict(self.ai.get_config()),
                               unit=str(self._unit))
         for key in ["nbpt_azim", "nbpt_rad", "polarization_factor",  "extra_options",
-                    "correct_solid_angle", "error_model", "method", "opencl_device",
+                    "correct_solid_angle", "correct_absorption", "error_model", "method", "opencl_device",
                     "azimuth_range", "radial_range",
                     "dummy", "delta_dummy", "normalization_factor",
                     "dark_current_image", "flat_field_image",
