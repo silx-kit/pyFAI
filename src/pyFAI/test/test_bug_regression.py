@@ -54,6 +54,7 @@ import numpy
 
 from .. import detectors, load, units
 from ..detectors import detector_factory, sensors
+from ..diffmap import DiffMap
 from ..ext import splitPixel
 from ..integrator.azimuthal import AzimuthalIntegrator
 from ..io.integration_config import WorkerConfig
@@ -1110,6 +1111,13 @@ class TestBug2953(unittest.TestCase):
         old = Worker()
         old.set_config(WorkerConfig.from_dict(saved))
         self.assertIsNone(old.correct_absorption)
+
+    def test_diffmap_options(self):
+        "point 3: diff_map has --correct-absorption/--no-correct-absorption, stored in the configuration"
+        for flag, expected in (([], None), (["--correct-absorption"], True), (["--no-correct-absorption"], False)):
+            options, config = DiffMap().parse(flag, with_config=True)
+            self.assertIs(options.correct_absorption, expected, flag)
+            self.assertIs(config.ai.correct_absorption, expected, flag)
 
     def test_sigma_clip(self):
         "point 3: `sigma_clip` follows the same rule for `correct_absorption`"

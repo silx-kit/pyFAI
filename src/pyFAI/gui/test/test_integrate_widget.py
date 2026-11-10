@@ -31,7 +31,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2026"
+__date__ = "10/11/2026"
 
 import logging
 import unittest
@@ -72,6 +72,13 @@ class TestIntegrationDialog(TestCaseQt):
         dico = widget.getConfig()
         self.assertEqual(dico["dark_current"], ["a", "b", "c"])
         self.assertEqual(dico["flat_field"], ["a", "b", "d"])
+
+    def test_config_correct_absorption(self):
+        "#2953: no widget for `correct_absorption`, but the value of the configuration is kept"
+        for value in (None, True, False):
+            widget = WorkerConfigurator()
+            widget.setConfig({"correct_absorption": value})
+            self.assertIs(widget.getConfig()["correct_absorption"], value)
 
 
 def suite():

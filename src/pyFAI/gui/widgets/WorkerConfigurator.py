@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/08/2026"
+__date__ = "10/11/2026"
 __status__ = "production"
 
 from typing import ClassVar
@@ -86,6 +86,8 @@ class WorkerConfigurator(qt.QWidget):
         self.__model = _WorkerModel()
 
         self.__openclDevice = None
+        # No widget (yet): the value is kept from the configuration and given back unchanged
+        self.__correct_absorption = None
         self.__method = None
         self.__wavelengthLabel = None
         self.__geometryModel = GeometryModel()
@@ -367,6 +369,7 @@ class WorkerConfigurator(qt.QWidget):
         # processing-config
         wc.chi_discontinuity_at_0 = bool(self.chi_discontinuity_at_0.isChecked())
         wc.correct_solid_angle = bool(self.do_solid_angle.isChecked())
+        wc.correct_absorption = self.__correct_absorption
         wc.error_model = ErrorModel(self.error_model.currentIndex())
 
         method = self.__method
@@ -626,6 +629,8 @@ class WorkerConfigurator(qt.QWidget):
             self.sample_orientation.setText(str(unit_ip.sample_orientation))
 
         self.do_solid_angle.setChecked(bool(wc.correct_solid_angle))
+        # WorkerFiberConfig does not have it
+        self.__correct_absorption = getattr(wc, "correct_absorption", None)
         self.do_dummy.setChecked(wc.do_dummy)
         self.do_dark.setChecked(wc.do_dark)
         self.do_flat.setChecked(wc.do_flat)
