@@ -35,7 +35,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2025 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/09/2026"
+__date__ = "10/11/2026"
 
 import copy
 import logging
@@ -51,7 +51,7 @@ import fabio
 import numpy
 
 from .. import detectors, load, units
-from ..detectors import detector_factory
+from ..detectors import detector_factory, sensors
 from ..ext import splitPixel
 from ..integrator.azimuthal import AzimuthalIntegrator
 from ..io.ponifile import PoniFile
@@ -942,6 +942,85 @@ class TestBug1703(unittest.TestCase):
             self.assertLess(mathutil.rwp((res_azim_f[0], res_azim_f[2]), (res_pois_1[0], res_pois_1[2]), scale=factor), 5, f"sigma Azimuthal, unscaled, {method}")
 
 
+class TestBug2953(unittest.TestCase):
+    """#2953: the sensor efficiency (`absorption`) is never computed from `Detector.sensor`"""
+    SHAPE = (200, 200)
+    THICKNESS = 450e-6  # m
+    WAVELENGTH = 1e-10  # m, i.e. 12.398 keV
+    ENERGY = 12.398419843320026  # keV
+
+    @classmethod
+    def setUpClass(cls):
+        cls.sensor = sensors.SensorConfig("Si", cls.THICKNESS)
+        cls.detector = detectors.Detector(500e-6, 500e-6, max_shape=cls.SHAPE, sensor=cls.sensor)
+        cls.ai = AzimuthalIntegrator(dist=0.030, poni1=0.050, poni2=0.050,
+                                     detector=cls.detector, wavelength=cls.WAVELENGTH)
+        tth = cls.ai.center_array(cls.SHAPE, unit="2th_rad")
+        mu = sensors.Si_MATERIAL.mu(cls.ENERGY, unit="m^-1")
+        cls.eta = (1 - numpy.exp(-mu * cls.THICKNESS / numpy.cos(tth))).astype("float32")
+        # noise-free image, as the sensor would record it
+        cls.img = (1e5 * cls.ai.solidAngleArray(cls.SHAPE)
+                   * cls.ai.polarization(cls.SHAPE, factor=1.0) * cls.eta).astype("float32")
+        cls.kw = dict(method=("no", "csr", "cython"), correctSolidAngle=True,
+                      polarization_factor=1.0, unit="2th_deg")
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.sensor = cls.detector = cls.ai = cls.eta = cls.img = cls.kw = None
+
+    @staticmethod
+    def spread(values):
+        "relative peak-to-peak spread of a profile"
+        values = values[numpy.isfinite(values) & (values > 0)]
+        return (values.max() - values.min()) / values.mean()
+
+    @classmethod
+    def profile2d(cls, res):
+        "azimuthal mean of the radial columns which are fully populated"
+        full = (res.intensity > 0).all(axis=0)
+        return res.intensity[:, full].mean(axis=0)
+
+    def test_builtin_sensor(self):
+        "point 1: built-in detectors know their sensor"
+        det = detectors.Pilatus1M()
+        self.assertIsNotNone(det.sensor, "Pilatus1M.sensor is defined")
+        self.assertEqual(det.sensor.material.name, "Si")
+
+    def test_efficiency_array(self):
+        "point 2: the integrator computes the per-pixel efficiency, cached and with checksum"
+        eff = self.ai.sensor_efficiency(self.SHAPE)
+        self.assertEqual(eff.shape, self.SHAPE)
+        self.assertTrue(numpy.allclose(eff, self.eta, rtol=1e-4), "matches 1-exp(-mu.t/cos(2theta))")
+        self.assertIs(self.ai.sensor_efficiency(self.SHAPE), eff, "array is cached")
+        res = self.ai.sensor_efficiency(self.SHAPE, with_checksum=True)
+        self.assertTrue(hasattr(res, "checksum"), "checksum provided")
+
+    def test_efficiency_without_sensor(self):
+        "no sensor: no correction (None), like a missing flat"
+        ai = AzimuthalIntegrator(dist=0.030, wavelength=self.WAVELENGTH,
+                                 detector=detectors.Detector(500e-6, 500e-6, max_shape=self.SHAPE))
+        self.assertIsNone(ai.sensor_efficiency(self.SHAPE))
+
+    def test_integrate1d(self):
+        "point 3: opt-in `correct_absorption` flattens the pattern, off by default"
+        biased = self.ai.integrate1d_ng(self.img, 100, **self.kw)
+        self.assertGreater(self.spread(biased.intensity), 0.05, "default: no correction")
+        res = self.ai.integrate1d_ng(self.img, 100, correct_absorption=True, **self.kw)
+        self.assertLess(self.spread(res.intensity), 0.02, "corrected pattern is flat")
+
+    def test_warning_when_skipped(self):
+        "point 3: warn when the sensor is known but the correction is skipped"
+        with self.assertLogs(level="WARNING"):
+            self.ai.integrate1d_ng(self.img, 100, **self.kw)
+
+    def test_integrate2d(self):
+        "point 4: integrate2d_ng accepts `absorption` and `correct_absorption`"
+        res = self.ai.integrate2d_ng(self.img, 100, 36, absorption=self.eta, **self.kw)
+        self.assertLess(self.spread(self.profile2d(res)), 0.02, "absorption=")
+        res = self.ai.integrate2d_ng(self.img, 100, 36, correct_absorption=True, **self.kw)
+        self.assertLess(self.spread(self.profile2d(res)), 0.02, "correct_absorption=")
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
@@ -949,6 +1028,7 @@ def suite():
     testsuite.addTest(loader(TestBug211))
     testsuite.addTest(loader(TestBugRegression))
     testsuite.addTest(loader(TestBug1703))
+    testsuite.addTest(loader(TestBug2953))
     return testsuite
 
 
