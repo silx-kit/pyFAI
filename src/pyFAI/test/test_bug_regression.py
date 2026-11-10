@@ -1036,6 +1036,23 @@ class TestBug2953(unittest.TestCase):
         res = self.ai.medfilt1d_ng(self.img, 100, correct_absorption=False, **kw)
         self.assertGreater(self.spread(res.intensity), 0.05, "correction disabled")
 
+    def test_sigma_clip(self):
+        "point 3: `sigma_clip` follows the same rule for `correct_absorption`"
+        # sigma_clip needs an error model to get a meaningful result
+        res = self.ai.sigma_clip(self.img, 100, error_model="poisson", **self.kw)
+        self.assertLess(self.spread(res.intensity), 0.02, "parallax enabled: corrected by default")
+        res = self.ai.sigma_clip(self.img, 100, error_model="poisson", correct_absorption=False, **self.kw)
+        self.assertGreater(self.spread(res.intensity), 0.05, "correction disabled")
+
+    def test_sigma_clip_without_variance(self):
+        "sigma_clip needs the variance: without it, falls back on a poissonian model and warns loudly"
+        with self.assertLogs(level="WARNING") as logs:
+            res = self.ai.sigma_clip(self.img, 100, **self.kw)
+        self.assertIn("POISSONIAN", "\n".join(logs.output))
+        ref = self.ai.sigma_clip(self.img, 100, error_model="poisson", **self.kw)
+        self.assertTrue(numpy.allclose(res.intensity, ref.intensity), "same as the explicit poissonian model")
+        self.assertLess(self.spread(res.intensity), 0.02)
+
     def test_injected_efficiency(self):
         "point 3: without parallax, the efficiency can be injected (and cached) and used with correct_absorption=True"
         ai = AzimuthalIntegrator(dist=0.030, poni1=0.050, poni2=0.050,
