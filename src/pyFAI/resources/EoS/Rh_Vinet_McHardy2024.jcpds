@@ -1,0 +1,23 @@
+VERSION:   4
+COMMENT: Rhodium (Rh), Fm-3m - McHardy et al. (2024) Phys. Rev. B 109, 094113, doi:10.1103/PhysRevB.109.094113, tables I and III
+COMMENT: Vinet fit at 298 K: V0=13.764(2) A3/atom, K0=257(2) GPa, K0P=5.44(8) (table I)
+COMMENT: WARNING: the EOS keyword is a pyFAI extension, other programs read K0/K0P as Birch-Murnaghan
+COMMENT: Thermal model of the source: AP2 isotherm (V0=13.764 A3/atom, K0=257.536 GPa, K0P=5.3578) with a Holland-Powell thermal pressure (alpha0=2.050e-5 /K, thetaE=779 K), table III, valid to 191 GPa and 2700 K
+COMMENT: ALPHAT, DALPHADT, DK0DT, DK0PDT fitted on the Vinet isotherm with this thermal pressure, in the thermal pressure approach of Dioptas, between 298 and 3000 K and 0 and 200 GPa: pressure within 0.2 GPa (0.35 GPa from the AP2 model), temperature within 35 K at 0 GPa
+COMMENT: Intensities calculated (Cu Ka, Cromer-Mann form factors, no thermal factor)
+K0:        257.000
+K0P:       5.440
+EOS:       VINET
+SYMMETRY:  CUBIC
+A:         3.80424
+VOLUME:    55.0560
+DK0DT:     3.0327e-06
+DK0PDT:    -9.3945e-08
+ALPHAT:    3.0276e-05
+DALPHADT:  1.2294e-09
+DIHKL:       2.1964   100.0   1   1   1
+DIHKL:       1.9021    47.5   2   0   0
+DIHKL:       1.3450    29.0   2   2   0
+DIHKL:       1.1470    35.2   3   1   1
+DIHKL:       1.0982    10.5   2   2   2
+DIHKL:       0.9511     6.7   4   0   0

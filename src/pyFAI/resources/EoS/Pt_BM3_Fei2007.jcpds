@@ -1,0 +1,22 @@
+VERSION:   4
+COMMENT: Platinum (Pt), Fm-3m - Fei et al. (2007) PNAS 104, 9182-9186, doi:10.1073/pnas.0609013104, table 1
+COMMENT: 3rd order Birch-Murnaghan fit at 300 K, see Pt_Vinet_Fei2007.jcpds for the Vinet fit
+COMMENT: Thermal model of the source: Mie-Gruneisen-Debye, theta0=230 K, gamma0=2.72, q=0.5
+COMMENT: ALPHAT, DALPHADT, DK0DT, DK0PDT fitted on this model (thermal pressure, as in Dioptas) between 298 and 1000 K, from 0 GPa down to V/V0=0.8: pressure within 0.03 GPa, temperature within 0.7 K at 0 GPa
+COMMENT: Intensities calculated (Cu Ka, Cromer-Mann form factors, no thermal factor)
+K0:        277.000
+K0P:       4.950
+SYMMETRY:  CUBIC
+A:         3.92311
+VOLUME:    60.3800
+DK0DT:     3.1677e-03
+DK0PDT:    -4.7450e-05
+ALPHAT:    2.6382e-05
+DALPHADT:  1.6994e-10
+DIHKL:       2.2650   100.0   1   1   1
+DIHKL:       1.9616    49.1   2   0   0
+DIHKL:       1.3870    32.5   2   2   0
+DIHKL:       1.1829    39.9   3   1   1
+DIHKL:       1.1325    11.9   2   2   2
+DIHKL:       0.9808     7.1   4   0   0
+DIHKL:       0.9000    29.9   3   3   1

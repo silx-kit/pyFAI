@@ -1,0 +1,21 @@
+VERSION:   4
+COMMENT: Aluminium (Al), Fm-3m - Dewaele et al. (2004) Phys. Rev. B 70, 094112, doi:10.1103/PhysRevB.70.094112, table II
+COMMENT: Vinet fit at room temperature up to 153 GPa (He medium), V0=16.573 A3/atom, K0 fixed to the ultrasonic value 73 GPa, K0P=4.54(2) on the ruby scale of the same study (P'R)
+COMMENT: Free fit on the same scale: K0=74.3(1.1) GPa, K0P=4.47(6)
+COMMENT: WARNING: the EOS keyword is a pyFAI extension, other programs read K0/K0P as Birch-Murnaghan
+COMMENT: No thermal model in the source
+COMMENT: Intensities calculated (Cu Ka, Cromer-Mann form factor of Cl used for Al, no thermal factor)
+K0:        73.000
+K0P:       4.540
+EOS:       VINET
+SYMMETRY:  CUBIC
+A:         4.04719
+VOLUME:    66.2920
+DIHKL:       2.3366   100.0   1   1   1
+DIHKL:       2.0236    45.8   2   0   0
+DIHKL:       1.4309    26.5   2   2   0
+DIHKL:       1.2203    31.3   3   1   1
+DIHKL:       1.1683     9.2   2   2   2
+DIHKL:       1.0118     5.2   4   0   0
+DIHKL:       0.9285    20.9   3   3   1
+DIHKL:       0.9050    21.6   4   2   0

@@ -59,9 +59,15 @@ def build_project(name, root_dir):
     p = subprocess.Popen(["meson", "configure", "--prefix", "/"] + extra,
                      shell=False, cwd=build, env=os.environ)
     p.wait()
-    p = subprocess.Popen(["meson", "install", "--destdir", "."],
-                     shell=False, cwd=build, env=os.environ)
-    logger.debug("meson install ended with rc= %s", p.wait())
+    p = subprocess.run(["meson", "install", "--destdir", "."],
+                       cwd=build, env=os.environ, text=True, errors="replace",
+                       stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    with open(os.path.join(build, "meson.log"), "w") as wd:
+        wd.write(p.stdout)
+    logger.debug("meson install ended with rc= %s", p.returncode)
+    if p.returncode:
+        print(p.stdout)
+        raise SystemExit(f"meson install failed with rc={p.returncode}")
 
     home = None
     if os.environ.get("PYBUILD_NAME") == name:
