@@ -440,7 +440,8 @@ class MultiGeometryFiber:
                           lst_variance=None,
                           polarization_factor=None, dark=None, lst_flat=None,
                           method=("no", "histogram", "cython"),
-                          normalization_factor=1.0, **kwargs):
+                          normalization_factor=1.0,
+                          correct_absorption=None, **kwargs):
         """Performs 1D fiber integration of multiples frames, one for each geometry,
         It wraps the method integrate_fiber of pyFAI.integrator.fiber.FiberIntegrator
 
@@ -462,6 +463,9 @@ class MultiGeometryFiber:
         :param lst_flat: numpy.Array or list of numpy.array which flat the lst_data.
         :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :param float normalization_factor: Value of a normalization monitor
+        :param bool correct_absorption: correct for the efficiency of the sensor of each geometry (see `Geometry.sensor_efficiency`).
+               None (default) corrects the geometries where the parallax is activated, True forces the correction
+               (the efficiency has to be known), False disables it.
         :return: chi bins center positions and regrouped intensity
         :rtype: Integrate1dResult
         """
@@ -513,6 +517,7 @@ class MultiGeometryFiber:
                                       method=("no", "histogram", "cython"),
                                       normalization_factor=monitor,
                                       variance=var,
+                                      correct_absorption=correct_absorption,
                                       )
         if self.threadpool is None:
             results = map(_integrate,
@@ -568,7 +573,8 @@ class MultiGeometryFiber:
                           lst_variance=None,
                           polarization_factor=None, dark=None, lst_flat=None,
                           method=("no", "histogram", "cython"),
-                          normalization_factor=1.0, **kwargs):
+                          normalization_factor=1.0,
+                          correct_absorption=None, **kwargs):
         """Performs 2D azimuthal integration of multiples frames, one for each geometry,
         It wraps the method integrate2d_fiber of pyFAI.integrator.fiber.FiberIntegrator
 
@@ -594,6 +600,9 @@ class MultiGeometryFiber:
         :param lst_flat: numpy.Array or list of numpy.array which flat the lst_data.
         :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :param float normalization_factor: Value of a normalization monitor
+        :param bool correct_absorption: correct for the efficiency of the sensor of each geometry (see `Geometry.sensor_efficiency`).
+               None (default) corrects the geometries where the parallax is activated, True forces the correction
+               (the efficiency has to be known), False disables it.
         :return: regrouped intensity and unit arrays
         :rtype: Integrate2dResult
         """
@@ -638,7 +647,8 @@ class MultiGeometryFiber:
                                         polarization_factor=polarization_factor,
                                         method=method, safe=True,
                                         dummy=dummy, delta_dummy=delta_dummy,
-                                        mask=mask, flat=flat, dark=dark, normalization_factor=monitor, **kwargs)
+                                        mask=mask, flat=flat, dark=dark, normalization_factor=monitor,
+                                        correct_absorption=correct_absorption, **kwargs)
         if self.threadpool is None:
             results = map(_integrate,
                           zip(self.fis, lst_data, normalization_factor, lst_variance, lst_mask, lst_flat))

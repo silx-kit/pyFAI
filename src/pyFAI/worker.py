@@ -781,6 +781,7 @@ class WorkerFiber(Worker):
         self.dummy = dummy
         self.delta_dummy = delta_dummy
         self.correct_solid_angle = True
+        self.correct_absorption = None  # None: follows the parallax of the integrator
         self.dark_current_image = None
         self.flat_field_image = None
         self.mask_image = None
@@ -812,6 +813,7 @@ class WorkerFiber(Worker):
                   f"In-plane range: {self.ip_range}",
                   f"{msg_dim}",
                   f"Correct for solid angle: {self.correct_solid_angle}",
+                  f"Correct for absorption: {self.correct_absorption}",
                   f"Polarization factor: {self.polarization_factor}",
                   f"Dark current image: {self.dark_current_image}",
                   f"Flat field image: {self.flat_field_image}",
@@ -947,6 +949,7 @@ class WorkerFiber(Worker):
         self.polarization_factor = config.polarization_factor
 
         self.correct_solid_angle = True if config.correct_solid_angle is None else bool(config.correct_solid_angle)
+        self.correct_absorption = None if config.correct_absorption is None else bool(config.correct_absorption)
         self.dummy = config.val_dummy
         self.delta_dummy = config.delta_dummy
         self._normalization_factor = config.normalization_factor
@@ -969,7 +972,7 @@ class WorkerFiber(Worker):
         )
 
         for key in ["npt_oop", "npt_ip", "polarization_factor",  "extra_options",
-                    "correct_solid_angle", "error_model", "method", "opencl_device",
+                    "correct_solid_angle", "correct_absorption", "error_model", "method", "opencl_device",
                     "ip_range", "oop_range",
                     "dummy", "delta_dummy", "normalization_factor",
                     "dark_current_image", "flat_field_image",
@@ -1016,6 +1019,8 @@ class WorkerFiber(Worker):
         kwarg["variance"] = variance
         kwarg["dark"] = dark
         kwarg["flat"] = flat
+        if self.correct_absorption is not None:  # else the integrator decides, from its parallax
+            kwarg["correct_absorption"] = self.correct_absorption
         if self.error_model:
             kwarg["error_model"] = self.error_model
 

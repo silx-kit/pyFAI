@@ -202,13 +202,10 @@ class WorkerConfigurator(qt.QWidget):
         self.do_normalization.clicked.connect(self.__updateDisabledStates)
         self.do_1d_integration.clicked.connect(self.__updateDisabledStates)
         self.integrator_name.currentTextChanged.connect(self.__updateDisabledStates)
-        self.tabWidget.currentChanged.connect(self.__updateDisabledStates)
 
         self.__updateDisabledStates()
 
     def __updateDisabledStates(self):
-        # The absorption correction is not available for fiber integration (yet)
-        self.do_absorption.setEnabled(self._getIntegrationActiveTab() == 0)
         self.mask_file.setEnabled(self.do_mask.isChecked())
         self.dark_current.setEnabled(self.do_dark.isChecked())
         self.flat_field.setEnabled(self.do_flat.isChecked())
@@ -486,6 +483,7 @@ class WorkerConfigurator(qt.QWidget):
         # processing-config
         wc.chi_discontinuity_at_0 = bool(self.chi_discontinuity_at_0.isChecked())
         wc.correct_solid_angle = bool(self.do_solid_angle.isChecked())
+        wc.correct_absorption = self.__getCorrectAbsorption()
         wc.error_model = ErrorModel(self.error_model.currentIndex())
 
         method = self.__method

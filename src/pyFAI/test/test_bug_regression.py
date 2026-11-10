@@ -57,12 +57,13 @@ from ..detectors import detector_factory, sensors
 from ..diffmap import DiffMap
 from ..ext import splitPixel
 from ..integrator.azimuthal import AzimuthalIntegrator
-from ..io.integration_config import WorkerConfig
+from ..integrator.fiber import FiberIntegrator
+from ..io.integration_config import WorkerConfig, WorkerFiberConfig
 from ..io.ponifile import PoniFile
-from ..multi_geometry import MultiGeometry
+from ..multi_geometry import MultiGeometry, MultiGeometryFiber
 from ..opencl import ocl
 from ..utils import crc32, mathutil
-from ..worker import Worker
+from ..worker import Worker, WorkerFiber
 from .utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
@@ -1118,6 +1119,81 @@ class TestBug2953(unittest.TestCase):
             options, config = DiffMap().parse(flag, with_config=True)
             self.assertIs(options.correct_absorption, expected, flag)
             self.assertIs(config.ai.correct_absorption, expected, flag)
+
+    def test_fiber(self):
+        "point 3: fiber integration (same preprocessing): default follows the parallax, can be forced, explicit array"
+        fi = FiberIntegrator(dist=0.030, poni1=0.050, poni2=0.050,
+                             detector=self.detector, wavelength=self.WAVELENGTH)
+        fi.enable_parallax()
+        kw = {"npt_ip": 60, "npt_oop": 60, "method": ("no", "histogram", "cython"),
+              "correctSolidAngle": True, "polarization_factor": 1.0}
+
+        def flat(result):
+            intensity = result.intensity
+            return self.spread(intensity[numpy.isfinite(intensity)])
+
+        self.assertLess(flat(fi.integrate2d_fiber(self.img, **kw)), 0.02, "2D: corrected by default")
+        self.assertLess(flat(fi.integrate2d_fiber(self.img, correct_absorption=True, **kw)), 0.02, "2D: forced")
+        self.assertGreater(flat(fi.integrate2d_fiber(self.img, correct_absorption=False, **kw)), 0.05, "2D: disabled")
+        res = fi.integrate2d_fiber(self.img, absorption=self.eta, correct_absorption=False, **kw)
+        self.assertLess(flat(res), 0.02, "2D: explicit array")
+        kw1d = {"vertical_integration": True, **kw}
+        self.assertLess(flat(fi.integrate_fiber(self.img, **kw1d)), 0.02, "1D: corrected by default")
+        self.assertGreater(flat(fi.integrate_fiber(self.img, correct_absorption=False, **kw1d)), 0.05, "1D: disabled")
+        # without parallax: no correction by default
+        fi.enable_parallax(False)
+        self.assertGreater(flat(fi.integrate2d_fiber(self.img, **kw)), 0.05, "no parallax")
+
+    def test_multi_geometry_fiber(self):
+        "point 3: `MultiGeometryFiber` follows the same rule"
+        fis = []
+        imgs = []
+        for poni1 in (0.050, 0.052):
+            fi = FiberIntegrator(dist=0.030, poni1=poni1, poni2=0.050,
+                                 detector=self.detector, wavelength=self.WAVELENGTH)
+            fi.enable_parallax()
+            fis.append(fi)
+            # each image is simulated with the efficiency of its own geometry
+            imgs.append((1e5 * fi.solidAngleArray(self.SHAPE) * fi.polarization(self.SHAPE, factor=1.0)
+                         * fi.sensor_efficiency(self.SHAPE)).astype("float32"))
+        mg = MultiGeometryFiber(fis, unit=("qip_nm^-1", "qoop_nm^-1"), threadpoolsize=0)
+        kw = {"npt_ip": 60, "npt_oop": 60, "polarization_factor": 1.0}
+
+        def flat(result):
+            intensity = result.intensity
+            return self.spread(intensity[numpy.isfinite(intensity)])
+
+        self.assertLess(flat(mg.integrate2d_fiber(imgs, **kw)), 0.02, "corrected by default")
+        self.assertGreater(flat(mg.integrate2d_fiber(imgs, correct_absorption=False, **kw)), 0.05, "disabled")
+
+    def test_worker_fiber_config(self):
+        "point 3: `WorkerFiber` follows the parallax, and `correct_absorption` is persisted in `WorkerFiberConfig`"
+        fi = FiberIntegrator(dist=0.030, poni1=0.050, poni2=0.050,
+                             detector=self.detector, wavelength=self.WAVELENGTH)
+        fi.enable_parallax()
+        worker = WorkerFiber(fi, shapeIn=self.SHAPE, npt_oop=60, npt_ip=60, method=("no", "histogram", "cython"))
+        worker.polarization_factor = 1.0
+
+        def flat(worker):
+            intensity = worker.process(self.img)
+            return self.spread(intensity[numpy.isfinite(intensity)])
+
+        self.assertIsNone(worker.correct_absorption)
+        self.assertLess(flat(worker), 0.02, "parallax enabled: corrected by default")
+        worker.correct_absorption = False
+        self.assertGreater(flat(worker), 0.05, "correction disabled")
+        with tempfile.TemporaryDirectory() as tmp:
+            filename = os.path.join(tmp, "worker_fiber.json")
+            worker.get_worker_config().save(filename)
+            with open(filename) as fd:
+                self.assertIs(json.load(fd)["correct_absorption"], False)
+            config = WorkerFiberConfig.from_file(filename)
+        new = WorkerFiber()
+        new.set_config(config)
+        self.assertIs(new.correct_absorption, False)
+        self.assertGreater(flat(new), 0.05, "disabled correction survives the persistence")
+        new.correct_absorption = None
+        self.assertLess(flat(new), 0.02, "automatic: parallax restored from the poni")
 
     def test_sigma_clip(self):
         "point 3: `sigma_clip` follows the same rule for `correct_absorption`"
