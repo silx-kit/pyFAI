@@ -55,6 +55,7 @@ from ..detectors import detector_factory, sensors
 from ..ext import splitPixel
 from ..integrator.azimuthal import AzimuthalIntegrator
 from ..io.ponifile import PoniFile
+from ..multi_geometry import MultiGeometry
 from ..opencl import ocl
 from ..utils import crc32, mathutil
 from .utilstest import UtilsTest
@@ -1046,6 +1047,25 @@ class TestBug2953(unittest.TestCase):
         self.assertLess(res.intensity.mean() / 1e5, 0.97, "correction disabled")
         res = self.ai.integrate_radial(self.img, 36, 100, absorption=self.eta, correct_absorption=False, **kw)
         self.assertAlmostEqual(res.intensity.mean() / 1e5, 1.0, delta=0.01, msg="explicit array")
+
+    def test_multi_geometry(self):
+        "point 3: `MultiGeometry` follows the same rule, and lets `correct_absorption` be forced"
+        ais = []
+        for poni1 in (0.050, 0.052):
+            ai = AzimuthalIntegrator(dist=0.030, poni1=poni1, poni2=0.050,
+                                     detector=self.detector, wavelength=self.WAVELENGTH)
+            ai.enable_parallax()
+            ais.append(ai)
+        mg = MultiGeometry(ais, unit="2th_deg", radial_range=(5, 50), azimuth_range=(-180, 180), threadpoolsize=0)
+        imgs = [self.img, self.img]  # the 2nd geometry is shifted by 2mm, the efficiency stays close
+        res = mg.integrate1d(imgs, 100, polarization_factor=1.0)
+        self.assertLess(self.spread(res.intensity), 0.02, "parallax enabled: corrected by default")
+        res = mg.integrate1d(imgs, 100, polarization_factor=1.0, correct_absorption=False)
+        self.assertGreater(self.spread(res.intensity), 0.05, "correction disabled")
+        res = mg.integrate2d(imgs, 100, 36, polarization_factor=1.0)
+        self.assertLess(self.spread(self.profile2d(res)), 0.02, "2D: corrected by default")
+        res = mg.integrate2d(imgs, 100, 36, polarization_factor=1.0, correct_absorption=False)
+        self.assertGreater(self.spread(self.profile2d(res)), 0.05, "2D: correction disabled")
 
     def test_sigma_clip(self):
         "point 3: `sigma_clip` follows the same rule for `correct_absorption`"
