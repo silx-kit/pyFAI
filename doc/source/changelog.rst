@@ -13,7 +13,7 @@ Change-log of versions
   * `MultiModule.display()` draws the modules of a detector and the displacement of the corners highlighted (#2956)
   * Median filtering on GPU is 3x faster: the comb sort now spreads over the whole workgroup and sorts (key, index) pairs, in local memory when the bin fits.
   * `Integrate2dResult.rebin1d()` gains `radial_range` and `azimuth_range`, to extract the pattern of an azimuthal sector out of a single 2D integration (#2961)
-  * Sensor efficiency (absorption in the sensor volume) is computed from `Detector.sensor` by `Geometry.sensor_efficiency()` and applied with the new opt-in `correct_absorption` option of `integrate1d_ng`/`integrate2d_ng`, which also gains `absorption=` (#2953)
+  * Sensor efficiency (absorption in the sensor volume) is corrected by `integrate1d`/`integrate2dg` as soon as the parallax is enabled (#2953)
 
 - Bug fixes:
 
