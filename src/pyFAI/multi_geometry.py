@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "21/08/2026"
+__date__ = "10/11/2026"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -131,7 +131,8 @@ class MultiGeometry:
                     polarization_factor=None,
                     normalization_factor=None,
                     lst_mask=None, lst_flat=None,
-                    method=("full", "histogram", "cython")):
+                    method=("full", "histogram", "cython"),
+                    correct_absorption=None):
         """Perform 1D azimuthal integration
 
         :param lst_data: list of numpy array
@@ -147,6 +148,9 @@ class MultiGeometry:
         :param lst_mask: numpy.Array or list of numpy.array which mask the lst_data.
         :param lst_flat: numpy.Array or list of numpy.array which flat the lst_data.
         :param method: integration method, a string or a registered method
+        :param correct_absorption: correct for the efficiency of the sensor of each geometry (see `Geometry.sensor_efficiency`).
+               None (default) corrects the geometries where the parallax is activated, True forces the correction
+               (the efficiency has to be known), False disables it.
         :return: 2th/I or a dict with everything depending on "all"
         :rtype: Integrate1dResult, dict
         """
@@ -184,7 +188,8 @@ class MultiGeometry:
                                     radial_range=self.radial_range,
                                     azimuth_range=self.azimuth_range,
                                     method=method, unit=self.radial_unit, safe=True,
-                                    mask=mask, flat=flat, normalization_factor=monitor)
+                                    mask=mask, flat=flat, normalization_factor=monitor,
+                                    correct_absorption=correct_absorption)
 
         if self.threadpool is None:
             results = list(map(_integrate,
@@ -216,7 +221,8 @@ class MultiGeometry:
                     polarization_factor=None,
                     normalization_factor=None,
                     lst_mask=None, lst_flat=None,
-                    method=("full", "histogram", "cython")):
+                    method=("full", "histogram", "cython"),
+                    correct_absorption=None):
         """Performs 2D azimuthal integration of multiples frames, one for each geometry
 
         :param lst_data: list of numpy array
@@ -232,6 +238,9 @@ class MultiGeometry:
         :param lst_mask: numpy.Array or list of numpy.array which mask the lst_data.
         :param lst_flat: numpy.Array or list of numpy.array which flat the lst_data.
         :param method: integration method (or its name)
+        :param correct_absorption: correct for the efficiency of the sensor of each geometry (see `Geometry.sensor_efficiency`).
+               None (default) corrects the geometries where the parallax is activated, True forces the correction
+               (the efficiency has to be known), False disables it.
         :return: I/2th/chi or a dict with everything depending on "all"
         :rtype: Integrate2dResult, dict
         """
@@ -272,7 +281,8 @@ class MultiGeometry:
                                     radial_range=self.radial_range,
                                     azimuth_range=self.azimuth_range,
                                     method=method, unit=self.unit, safe=True,
-                                    mask=mask, flat=flat, normalization_factor=monitor)
+                                    mask=mask, flat=flat, normalization_factor=monitor,
+                                    correct_absorption=correct_absorption)
 
         if self.threadpool is None:
             results = list(map(_integrate,
