@@ -1028,6 +1028,14 @@ class TestBug2953(unittest.TestCase):
         res = ai.integrate1d_ng(self.img, 100, **self.kw)
         self.assertGreater(self.spread(res.intensity), 0.05, "no parallax: not corrected by default")
 
+    def test_medfilt1d(self):
+        "point 3: `medfilt1d_ng` follows the same rule for `correct_absorption`"
+        kw = {k: v for k, v in self.kw.items() if k != "method"}
+        res = self.ai.medfilt1d_ng(self.img, 100, **kw)
+        self.assertLess(self.spread(res.intensity), 0.02, "parallax enabled: corrected by default")
+        res = self.ai.medfilt1d_ng(self.img, 100, correct_absorption=False, **kw)
+        self.assertGreater(self.spread(res.intensity), 0.05, "correction disabled")
+
     def test_injected_efficiency(self):
         "point 3: without parallax, the efficiency can be injected (and cached) and used with correct_absorption=True"
         ai = AzimuthalIntegrator(dist=0.030, poni1=0.050, poni2=0.050,

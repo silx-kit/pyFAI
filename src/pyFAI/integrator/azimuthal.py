@@ -1273,6 +1273,7 @@ class AzimuthalIntegrator(Integrator):
                      dark=None,
                      flat=None,
                      absorption=None,
+                     correct_absorption=None,
                      method=("full", "csr", "cython"),
                      unit=units.Q,
                      percentile=50,
@@ -1309,7 +1310,10 @@ class AzimuthalIntegrator(Integrator):
 
         :param ndarray dark: dark noise image
         :param ndarray flat: flat field image
-        :param ndarray absorption: Detector absorption (image)
+        :param ndarray absorption: absorption correction image (efficiency of the sensor), used as such
+        :param bool correct_absorption: correct for the efficiency of the sensor (see `sensor_efficiency`).
+               None (default) corrects when the parallax is activated, True forces the correction
+               (the efficiency has to be known: parallax or `set_sensor_efficiency`), False disables it.
         :param ndarray variance: the variance of the signal
         :param str error_model: can be "poisson" to assume a poissonian detector (variance=I) or "azimuthal" to take the std² in each ring (better, more expenive)
         :param unit: unit to be used for integration
@@ -1398,6 +1402,8 @@ class AzimuthalIntegrator(Integrator):
             polarization = _polarization_crc = None
         else:
             polarization, _polarization_crc = self.polarization(data.shape, polarization_factor, with_checksum=True)
+
+        absorption, _absorption_crc = self._normalize_absorption(data.shape, correct_absorption, absorption)
 
         if (method.algo_lower == "csr"):
             "This is the only method implemented for now ..."
