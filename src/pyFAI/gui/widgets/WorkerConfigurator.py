@@ -86,8 +86,6 @@ class WorkerConfigurator(qt.QWidget):
         self.__model = _WorkerModel()
 
         self.__openclDevice = None
-        # No widget (yet): the value is kept from the configuration and given back unchanged
-        self.__correct_absorption = None
         self.__method = None
         self.__wavelengthLabel = None
         self.__geometryModel = GeometryModel()
@@ -95,6 +93,9 @@ class WorkerConfigurator(qt.QWidget):
         self.__only1dIntegration = False
 
         self.geometry_label.setGeometryModel(self.__geometryModel)
+
+        # automatic by default (not set in the ui file: the loader cannot read Qt::PartiallyChecked)
+        self.__setCorrectAbsorption(None)
 
         # Connect widget to edit the wavelength
         wavelengthUnit = DataModel()
@@ -201,10 +202,13 @@ class WorkerConfigurator(qt.QWidget):
         self.do_normalization.clicked.connect(self.__updateDisabledStates)
         self.do_1d_integration.clicked.connect(self.__updateDisabledStates)
         self.integrator_name.currentTextChanged.connect(self.__updateDisabledStates)
+        self.tabWidget.currentChanged.connect(self.__updateDisabledStates)
 
         self.__updateDisabledStates()
 
     def __updateDisabledStates(self):
+        # The absorption correction is not available for fiber integration (yet)
+        self.do_absorption.setEnabled(self._getIntegrationActiveTab() == 0)
         self.mask_file.setEnabled(self.do_mask.isChecked())
         self.dark_current.setEnabled(self.do_dark.isChecked())
         self.flat_field.setEnabled(self.do_flat.isChecked())
@@ -303,6 +307,21 @@ class WorkerConfigurator(qt.QWidget):
     def getPoniDict(self):
         return self.getPoni().as_dict()
 
+    def __getCorrectAbsorption(self) -> bool | None:
+        """Value of the tristate checkbox: None (automatic) when partially checked"""
+        state = self.do_absorption.checkState()
+        if state == qt.Qt.CheckState.PartiallyChecked:
+            return None
+        return state == qt.Qt.CheckState.Checked
+
+    def __setCorrectAbsorption(self, value: bool | None):
+        """Set the tristate checkbox from None (automatic), True or False"""
+        if value is None:
+            state = qt.Qt.CheckState.PartiallyChecked
+        else:
+            state = qt.Qt.CheckState.Checked if value else qt.Qt.CheckState.Unchecked
+        self.do_absorption.setCheckState(state)
+
     def _getIntegrationActiveTab(self) -> int:
         # tab_index = 0 -> Azimuthal integration
         # tab_index = 1 -> Fiber integration
@@ -369,7 +388,7 @@ class WorkerConfigurator(qt.QWidget):
         # processing-config
         wc.chi_discontinuity_at_0 = bool(self.chi_discontinuity_at_0.isChecked())
         wc.correct_solid_angle = bool(self.do_solid_angle.isChecked())
-        wc.correct_absorption = self.__correct_absorption
+        wc.correct_absorption = self.__getCorrectAbsorption()
         wc.error_model = ErrorModel(self.error_model.currentIndex())
 
         method = self.__method
@@ -629,8 +648,7 @@ class WorkerConfigurator(qt.QWidget):
             self.sample_orientation.setText(str(unit_ip.sample_orientation))
 
         self.do_solid_angle.setChecked(bool(wc.correct_solid_angle))
-        # WorkerFiberConfig does not have it
-        self.__correct_absorption = getattr(wc, "correct_absorption", None)
+        self.__setCorrectAbsorption(wc.correct_absorption)
         self.do_dummy.setChecked(wc.do_dummy)
         self.do_dark.setChecked(wc.do_dark)
         self.do_flat.setChecked(wc.do_flat)
