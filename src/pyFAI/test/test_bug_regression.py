@@ -56,7 +56,7 @@ from ..ext import splitPixel
 from ..integrator.azimuthal import AzimuthalIntegrator
 from ..io.ponifile import PoniFile
 from ..opencl import ocl
-from ..utils import mathutil
+from ..utils import crc32, mathutil
 from .utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
@@ -961,8 +961,9 @@ class TestBug2953(unittest.TestCase):
         # noise-free image, as the sensor would record it
         cls.img = (1e5 * cls.ai.solidAngleArray(cls.SHAPE)
                    * cls.ai.polarization(cls.SHAPE, factor=1.0) * cls.eta).astype("float32")
-        cls.kw = dict(method=("no", "csr", "cython"), correctSolidAngle=True,
-                      polarization_factor=1.0, unit="2th_deg")
+        cls.ai.enable_parallax()  # the sensor efficiency comes with the parallax correction
+        cls.kw = {"method": ("no", "csr", "cython"), "correctSolidAngle": True,
+                  "polarization_factor": 1.0, "unit": "2th_deg"}
 
     @classmethod
     def tearDownClass(cls):
@@ -985,40 +986,98 @@ class TestBug2953(unittest.TestCase):
         det = detectors.Pilatus1M()
         self.assertIsNotNone(det.sensor, "Pilatus1M.sensor is defined")
         self.assertEqual(det.sensor.material.name, "Si")
+        self.assertEqual(det.sensor.thickness, 320e-6)
+        self.assertEqual(detectors.Eiger2_4M().sensor, sensors.SensorConfig("Si", 450e-6))
+        self.assertEqual(detectors.PilatusCdTe1M().sensor, sensors.SensorConfig("CdTe", 1000e-6))
+        self.assertIsNone(detectors.Detector(75e-6, 75e-6).sensor, "unknown detector has no sensor")
+        # explicit sensor wins, instances do not share their sensor
+        thick = sensors.SensorConfig("Si", 1000e-6)
+        self.assertEqual(detectors.Pilatus1M(sensor=thick).sensor, thick)
+        self.assertIsNot(detectors.Pilatus1M().sensor, detectors.Pilatus1M().sensor)
+        # configuration saved without sensor (old PONI file) gets the default
+        det = detector_factory("Pilatus1M", {"pixel1": 172e-6, "pixel2": 172e-6})
+        self.assertEqual(det.sensor, sensors.SensorConfig("Si", 320e-6))
 
     def test_efficiency_array(self):
-        "point 2: the integrator computes the per-pixel efficiency, cached and with checksum"
+        "point 2: with parallax, the integrator computes the per-pixel efficiency, cached and with checksum"
         eff = self.ai.sensor_efficiency(self.SHAPE)
         self.assertEqual(eff.shape, self.SHAPE)
-        self.assertTrue(numpy.allclose(eff, self.eta, rtol=1e-4), "matches 1-exp(-mu.t/cos(2theta))")
+        self.assertTrue(numpy.allclose(eff, self.eta, rtol=1e-3), "matches 1-exp(-mu.t/cos(2theta))")
         self.assertIs(self.ai.sensor_efficiency(self.SHAPE), eff, "array is cached")
-        res = self.ai.sensor_efficiency(self.SHAPE, with_checksum=True)
-        self.assertTrue(hasattr(res, "checksum"), "checksum provided")
+        arr, crc = self.ai.sensor_efficiency(self.SHAPE, with_checksum=True)
+        self.assertIs(arr, eff)
+        self.assertEqual(crc, crc32(eff), "checksum provided")
 
-    def test_efficiency_without_sensor(self):
-        "no sensor: no correction (None), like a missing flat"
-        ai = AzimuthalIntegrator(dist=0.030, wavelength=self.WAVELENGTH,
-                                 detector=detectors.Detector(500e-6, 500e-6, max_shape=self.SHAPE))
-        self.assertIsNone(ai.sensor_efficiency(self.SHAPE))
+    def test_efficiency_needs_parallax(self):
+        "point 2: the efficiency is only available when the parallax is activated"
+        ai = AzimuthalIntegrator(dist=0.030, wavelength=self.WAVELENGTH, detector=self.detector)
+        self.assertIsNone(ai.sensor_efficiency(self.SHAPE), "sensor known but no parallax")
+        ai.enable_parallax()
+        self.assertIsNotNone(ai.sensor_efficiency(self.SHAPE))
+        ai.enable_parallax(False)
+        self.assertIsNone(ai.sensor_efficiency(self.SHAPE), "parallax disabled again")
 
     def test_integrate1d(self):
-        "point 3: opt-in `correct_absorption` flattens the pattern, off by default"
-        biased = self.ai.integrate1d_ng(self.img, 100, **self.kw)
-        self.assertGreater(self.spread(biased.intensity), 0.05, "default: no correction")
-        res = self.ai.integrate1d_ng(self.img, 100, correct_absorption=True, **self.kw)
-        self.assertLess(self.spread(res.intensity), 0.02, "corrected pattern is flat")
+        "point 3: `correct_absorption` is None by default: follows the parallax; can be forced"
+        res = self.ai.integrate1d_ng(self.img, 100, **self.kw)
+        self.assertLess(self.spread(res.intensity), 0.02, "parallax enabled: corrected by default")
+        res = self.ai.integrate1d_ng(self.img, 100, correct_absorption=False, **self.kw)
+        self.assertGreater(self.spread(res.intensity), 0.05, "correction disabled")
+        ai = AzimuthalIntegrator(dist=0.030, poni1=0.050, poni2=0.050,
+                                 detector=self.detector, wavelength=self.WAVELENGTH)
+        res = ai.integrate1d_ng(self.img, 100, **self.kw)
+        self.assertGreater(self.spread(res.intensity), 0.05, "no parallax: not corrected by default")
 
-    def test_warning_when_skipped(self):
-        "point 3: warn when the sensor is known but the correction is skipped"
+    def test_injected_efficiency(self):
+        "point 3: without parallax, the efficiency can be injected (and cached) and used with correct_absorption=True"
+        ai = AzimuthalIntegrator(dist=0.030, poni1=0.050, poni2=0.050,
+                                 detector=detectors.Detector(500e-6, 500e-6, max_shape=self.SHAPE),
+                                 wavelength=self.WAVELENGTH)
+        self.assertIsNone(ai.sensor_efficiency(self.SHAPE))
+        ai.set_sensor_efficiency(self.eta)
+        self.assertTrue(numpy.array_equal(ai.sensor_efficiency(self.SHAPE), self.eta))
+        eff, crc = ai.sensor_efficiency(self.SHAPE, with_checksum=True)
+        self.assertEqual(crc, crc32(eff))
+        self.assertIs(ai.__copy__().sensor_efficiency(self.SHAPE), eff, "copied with the geometry")
+        res = ai.integrate1d_ng(self.img, 100, **self.kw)
+        self.assertGreater(self.spread(res.intensity), 0.05, "no parallax: not corrected by default")
+        res = ai.integrate1d_ng(self.img, 100, correct_absorption=True, **self.kw)
+        self.assertLess(self.spread(res.intensity), 0.02, "forced correction with the injected array")
+        with self.assertRaises(RuntimeError):
+            ai.sensor_efficiency((10, 10))
+        ai.set_sensor_efficiency(None)
+        self.assertIsNone(ai.sensor_efficiency(self.SHAPE))
+
+    def test_efficiency_dropped_on_reset(self):
+        "point 2: the efficiency is cached, so it is dropped when the geometry changes (better absent than wrong)"
+        ai = AzimuthalIntegrator(dist=0.030, poni1=0.050, poni2=0.050,
+                                 detector=self.detector, wavelength=self.WAVELENGTH)
+        ai.set_sensor_efficiency(self.eta)
+        self.assertIsNotNone(ai.sensor_efficiency(self.SHAPE))
+        ai.dist = 0.05
+        self.assertIsNone(ai.sensor_efficiency(self.SHAPE), "injected array dropped with the geometry")
+        ai.enable_parallax()
+        eff = ai.sensor_efficiency(self.SHAPE)
+        ai.dist = 0.03
+        self.assertIsNot(ai.sensor_efficiency(self.SHAPE), eff, "calculated array regenerated")
+        ai.set_sensor_efficiency(self.eta)
+        self.assertIs(ai.sensor_efficiency(self.SHAPE), ai.sensor_efficiency(self.SHAPE))
+        self.assertTrue(numpy.array_equal(ai.sensor_efficiency(self.SHAPE), self.eta), "injected wins over parallax")
+
+    def test_warning_without_parallax(self):
+        "point 3: warn when the correction is requested but the efficiency is unknown"
+        ai = AzimuthalIntegrator(dist=0.030, wavelength=self.WAVELENGTH, detector=self.detector)
         with self.assertLogs(level="WARNING"):
-            self.ai.integrate1d_ng(self.img, 100, **self.kw)
+            ai.integrate1d_ng(self.img, 100, correct_absorption=True, **self.kw)
 
     def test_integrate2d(self):
         "point 4: integrate2d_ng accepts `absorption` and `correct_absorption`"
         res = self.ai.integrate2d_ng(self.img, 100, 36, absorption=self.eta, **self.kw)
         self.assertLess(self.spread(self.profile2d(res)), 0.02, "absorption=")
-        res = self.ai.integrate2d_ng(self.img, 100, 36, correct_absorption=True, **self.kw)
-        self.assertLess(self.spread(self.profile2d(res)), 0.02, "correct_absorption=")
+        res = self.ai.integrate2d_ng(self.img, 100, 36, **self.kw)
+        self.assertLess(self.spread(self.profile2d(res)), 0.02, "parallax enabled: corrected by default")
+        res = self.ai.integrate2d_ng(self.img, 100, 36, correct_absorption=False, **self.kw)
+        self.assertGreater(self.spread(self.profile2d(res)), 0.05, "correction disabled")
 
 
 def suite():
