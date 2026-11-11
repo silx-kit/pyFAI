@@ -29,12 +29,16 @@ import json
 import os
 import shutil
 import unittest
+from unittest import mock
 
 import fabio
 import h5py
 import numpy
 
 import pyFAI.app.integrate
+from pyFAI.detectors import Detector
+from pyFAI.detectors.sensors import SensorConfig
+from pyFAI.integrator.azimuthal import AzimuthalIntegrator
 from pyFAI.io import integration_config
 
 from .utilstest import UtilsTest
@@ -167,6 +171,48 @@ class TestIntegrateApp(unittest.TestCase):
         pyFAI.app.integrate.integrate_shell(options, [datapath])
         result = numpy.loadtxt(self.get_path("data.dat"))
         numpy.testing.assert_almost_equal(result, expected, decimal=1)
+
+    def test_integrate_correct_absorption(self):
+        "#2953: --correct-absorption/--no-correct-absorption on top of the parallax stored in the poni"
+        shape = (200, 200)
+        ai = AzimuthalIntegrator(dist=0.030, poni1=0.050, poni2=0.050, wavelength=1e-10,
+                                 detector=Detector(500e-6, 500e-6, max_shape=shape,
+                                                   sensor=SensorConfig("Si", 450e-6)))
+        ai.enable_parallax()
+        config = integration_config.WorkerConfig(poni=ai.get_config(), nbpt_rad=50, nbpt_azim=1,
+                                                 unit="2th_deg", method=("no", "histogram", "cython"))
+        config_file = self.get_path("parallax.json")
+        config.save(config_file)
+        datapath = self.create_edf_file("data.edf", numpy.full(shape, 1000, dtype=numpy.float32))
+
+        def run(flag, name):
+            options = self.Options()
+            options.json = config_file
+            options.output = self.get_path(name)
+            os.makedirs(options.output)
+            if flag != "unset":  # the attribute is optional for programmatic callers
+                options.correct_absorption = flag
+            pyFAI.app.integrate.integrate_shell(options, [datapath])
+            return numpy.loadtxt(os.path.join(options.output, "data.dat"))[:, 1]
+
+        default = run("unset", "default")
+        auto = run(None, "auto")
+        forced = run(True, "forced")
+        disabled = run(False, "disabled")
+        numpy.testing.assert_allclose(auto, default)
+        numpy.testing.assert_allclose(forced, default)
+        # the correction divides by an efficiency lower than 1: signal is larger when corrected
+        self.assertTrue(numpy.all(default[disabled > 0] > disabled[disabled > 0]))
+        self.assertGreater(default[disabled > 0].mean() / disabled[disabled > 0].mean(), 1.01)
+
+    def test_integrate_correct_absorption_options(self):
+        "#2953: the options of the command line are tri-state, None by default"
+        for flag, expected in (([], None),
+                               (["--correct-absorption"], True),
+                               (["--no-correct-absorption"], False)):
+            with mock.patch.object(pyFAI.app.integrate, "integrate_shell") as shell:
+                pyFAI.app.integrate._main(["--no-gui", *flag])
+            self.assertIs(shell.call_args[0][0].correct_absorption, expected, flag)
 
     def test_integrate_monitor_from_json(self):
         options = self.Options()

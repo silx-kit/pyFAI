@@ -31,10 +31,12 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2026"
+__date__ = "10/11/2026"
 
 import logging
 import unittest
+
+from silx.gui import qt
 
 from ..utils.testutils import TestCaseQt
 
@@ -42,6 +44,7 @@ from pyFAI.io import integration_config
 from pyFAI.test.utilstest import UtilsTest
 
 from ...gui.widgets.WorkerConfigurator import WorkerConfigurator
+from ...worker import WorkerFiber
 
 logger = logging.getLogger(__name__)
 
@@ -72,6 +75,36 @@ class TestIntegrationDialog(TestCaseQt):
         dico = widget.getConfig()
         self.assertEqual(dico["dark_current"], ["a", "b", "c"])
         self.assertEqual(dico["flat_field"], ["a", "b", "d"])
+
+    def test_config_correct_absorption(self):
+        "#2953: tristate checkbox: None=automatic (partially checked), True, False"
+        states = {None: qt.Qt.CheckState.PartiallyChecked,
+                  True: qt.Qt.CheckState.Checked,
+                  False: qt.Qt.CheckState.Unchecked}
+        widget = WorkerConfigurator()
+        self.assertEqual(widget.do_absorption.checkState(), states[None], "automatic by default")
+        self.assertIsNone(widget.getConfig()["correct_absorption"])
+        for value, state in states.items():
+            widget.setConfig({"correct_absorption": value})
+            self.assertEqual(widget.do_absorption.checkState(), state)
+            self.assertIs(widget.getConfig()["correct_absorption"], value)
+
+    def test_absorption_both_tabs(self):
+        "#2953: the absorption correction is available for azimuthal and fiber integration"
+        widget = WorkerConfigurator()
+        for index in (1, 0):
+            widget.tabWidget.setCurrentIndex(index)
+            self.assertTrue(widget.do_absorption.isEnabled(), index)
+
+    def test_config_correct_absorption_fiber(self):
+        "#2953: the checkbox is common to both tabs: its state goes to the fiber configuration"
+        widget = WorkerConfigurator()
+        config = WorkerFiber().get_worker_config()
+        for value in (None, True, False):
+            config.correct_absorption = value
+            widget.setConfig(config.as_dict())
+            self.assertEqual(widget.tabWidget.currentIndex(), 1)
+            self.assertIs(widget.getConfig()["correct_absorption"], value)
 
 
 def suite():

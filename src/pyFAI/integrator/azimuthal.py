@@ -29,7 +29,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/09/2026"
+__date__ = "10/11/2026"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -91,6 +91,7 @@ class AzimuthalIntegrator(Integrator):
                     radial_range=None, azimuth_range=None,
                     mask=None, dummy=None, delta_dummy=None,
                     polarization_factor=None, dark=None, flat=None, absorption=None,
+                    correct_absorption=None,
                     method=("bbox", "csr", "cython"), unit=units.Q, safe=True,
                     normalization_factor=1.0,
                     metadata=None):
@@ -118,13 +119,15 @@ class AzimuthalIntegrator(Integrator):
                True for using the former correction
         :param ndarray dark: dark noise image
         :param ndarray flat: flat field image
-        :param ndarray absorption: absorption correction image
+        :param ndarray absorption: absorption correction image (efficiency of the sensor), used as such
+        :param bool correct_absorption: correct for the efficiency of the sensor (see `sensor_efficiency`).
+               None (default) corrects when the parallax is activated, True forces the correction
+               (the efficiency has to be known: parallax or `set_sensor_efficiency`), False disables it.
         :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :param Unit unit: Output units, can be "q_nm^-1" (default), "2th_deg", "r_mm" for now.
         :param bool safe: Perform some extra checks to ensure LUT/CSR is still valid. False is faster.
         :param float normalization_factor: Value of a normalization monitor
         :param metadata: JSON serializable object containing the metadata, usually a dictionary.
-        :param ndarray absorption: detector absorption
         :return: Integrate1dResult namedtuple with (q,I,sigma) +extra information in it.
         """
         method = self._normalize_method(method, dim=1, default=self.DEFAULT_METHOD_1D)
@@ -142,6 +145,7 @@ class AzimuthalIntegrator(Integrator):
         mask, mask_crc, has_mask = self._normalize_mask(mask)
         solidangle, solidangle_crc = self._normalize_solidangle(shape, correctSolidAngle, with_checksum=False)
         polarization, polarization_crc = self._normalize_polarization(shape, polarization_factor, with_checksum=True)
+        absorption, absorption_crc = self._normalize_absorption(shape, correct_absorption, absorption)
         dark, has_dark = self._normalize_dark(dark)
         flat, has_flat = self._normalize_flat(flat)
 
@@ -257,6 +261,7 @@ class AzimuthalIntegrator(Integrator):
                 if method.impl_lower == "opencl":
                     kwargs["polarization_checksum"] = polarization_crc
                     kwargs["solidangle_checksum"] = solidangle_crc
+                    kwargs["absorption_checksum"] = absorption_crc
                 intpl = integr.integrate_ng(data, dark=dark,
                                             dummy=dummy, delta_dummy=delta_dummy,
                                             flat=flat, solidangle=solidangle,
@@ -372,6 +377,7 @@ class AzimuthalIntegrator(Integrator):
                                flat=flat, solidangle=solidangle,
                                polarization=polarization, absorption=absorption,
                                polarization_checksum=polarization_crc,
+                               absorption_checksum=absorption_crc,
                                normalization_factor=normalization_factor,
                                weighted_average=method.weighted_average,
                                radial_range=radial_range,
@@ -478,6 +484,7 @@ class AzimuthalIntegrator(Integrator):
                          radial_range=None, azimuth_range=None,
                          mask=None, dummy=None, delta_dummy=None,
                          polarization_factor=None, dark=None, flat=None,
+                         absorption=None, correct_absorption=None,
                          method=("bbox", "csr", "cython"), unit=units.CHI_DEG, radial_unit=units.Q,
                          normalization_factor=1.0):
         """Calculate the radial integrated profile curve as I = f(chi)
@@ -500,6 +507,10 @@ class AzimuthalIntegrator(Integrator):
                 * True for using the former correction
         :param ndarray dark: dark noise image
         :param ndarray flat: flat field image
+        :param ndarray absorption: absorption correction image (efficiency of the sensor), used as such
+        :param bool correct_absorption: correct for the efficiency of the sensor (see `sensor_efficiency`).
+               None (default) corrects when the parallax is activated, True forces the correction
+               (the efficiency has to be known: parallax or `set_sensor_efficiency`), False disables it.
         :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :param pyFAI.units.Unit unit: Output units, can be "chi_deg" or "chi_rad"
         :param pyFAI.units.Unit radial_unit: unit used for radial representation, can be "q_nm^-1", "q_A^-1", "2th_deg", "2th_rad", "r_mm" for now
@@ -512,7 +523,9 @@ class AzimuthalIntegrator(Integrator):
                                   correctSolidAngle=correctSolidAngle,
                                   mask=mask, dummy=dummy, delta_dummy=delta_dummy,
                                   polarization_factor=polarization_factor,
-                                  dark=dark, flat=flat, method=method,
+                                  dark=dark, flat=flat,
+                                  absorption=absorption, correct_absorption=correct_absorption,
+                                  method=method,
                                   normalization_factor=normalization_factor,
                                   radial_range=radial_range,
                                   azimuth_range=azimuth_range,
@@ -562,6 +575,7 @@ class AzimuthalIntegrator(Integrator):
                         error_model=None, radial_range=None, azimuth_range=None,
                         mask=None, dummy=None, delta_dummy=None,
                         polarization_factor=None, dark=None, flat=None,
+                        absorption=None, correct_absorption=None,
                         method=("bbox", "csr", "cython"), unit=units.Q,
                         safe=True, normalization_factor=1.0, metadata=None):
         """
@@ -601,6 +615,10 @@ class AzimuthalIntegrator(Integrator):
         :type dark: ndarray
         :param flat: flat field image
         :type flat: ndarray
+        :param ndarray absorption: absorption correction image (efficiency of the sensor), used as such
+        :param bool correct_absorption: correct for the efficiency of the sensor (see `sensor_efficiency`).
+               None (default) corrects when the parallax is activated, True forces the correction
+               (the efficiency has to be known: parallax or `set_sensor_efficiency`), False disables it.
         :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :type method: str
         :param pyFAI.units.Unit unit: Output units, can be "q_nm^-1", "q_A^-1", "2th_deg", "2th_rad", "r_mm" for anything defined as pyFAI.units.RADIAL_UNITS
@@ -695,6 +713,8 @@ class AzimuthalIntegrator(Integrator):
             solidangle = self.solidAngleArray(shape, correctSolidAngle)
         else:
             solidangle = None
+
+        absorption, absorption_crc = self._normalize_absorption(shape, correct_absorption, absorption)
 
         if polarization_factor is None:
             polarization = polarization_crc = None
@@ -872,6 +892,8 @@ class AzimuthalIntegrator(Integrator):
                                                        delta_dummy=delta_dummy,
                                                        polarization=polarization,
                                                        polarization_checksum=polarization_crc,
+                                                       absorption=absorption,
+                                                       absorption_checksum=absorption_crc,
                                                        safe=safe,
                                                        normalization_factor=normalization_factor,
                                                        weighted_average=method.weighted_average,)
@@ -886,6 +908,7 @@ class AzimuthalIntegrator(Integrator):
                                                    flat=flat,
                                                    solidangle=solidangle,
                                                    polarization=polarization,
+                                                   absorption=absorption,
                                                    normalization_factor=normalization_factor,
                                                    weighted_average=method.weighted_average,)
 
@@ -906,6 +929,7 @@ class AzimuthalIntegrator(Integrator):
                                    flat=flat,
                                    solidangle=solidangle,
                                    polarization=polarization,
+                                   absorption=absorption,
                                    normalization_factor=normalization_factor,
                                    chiDiscAtPi=self.chiDiscAtPi,
                                    orientation=int(self.detector.orientation),
@@ -937,6 +961,7 @@ class AzimuthalIntegrator(Integrator):
                                      flat=flat,
                                      solidangle=solidangle,
                                      polarization=polarization,
+                                     absorption=absorption,
                                      normalization_factor=normalization_factor,
                                      chiDiscAtPi=self.chiDiscAtPi,
                                      empty=empty,
@@ -1012,6 +1037,8 @@ class AzimuthalIntegrator(Integrator):
                                                  delta_dummy=delta_dummy,
                                                  polarization=polarization,
                                                  polarization_checksum=polarization_crc,
+                                                 absorption=absorption,
+                                                 absorption_checksum=absorption_crc,
                                                  safe=safe,
                                                  normalization_factor=normalization_factor,
                                                  radial_range=radial_range,
@@ -1039,7 +1066,7 @@ class AzimuthalIntegrator(Integrator):
                                          flat=flat,
                                          solidangle=solidangle,
                                          polarization=polarization,
-                                         absorption=None,
+                                         absorption=absorption,
                                          mask=mask,
                                          dummy=dummy,
                                          delta_dummy=delta_dummy,
@@ -1253,6 +1280,7 @@ class AzimuthalIntegrator(Integrator):
                      dark=None,
                      flat=None,
                      absorption=None,
+                     correct_absorption=None,
                      method=("full", "csr", "cython"),
                      unit=units.Q,
                      percentile=50,
@@ -1289,7 +1317,10 @@ class AzimuthalIntegrator(Integrator):
 
         :param ndarray dark: dark noise image
         :param ndarray flat: flat field image
-        :param ndarray absorption: Detector absorption (image)
+        :param ndarray absorption: absorption correction image (efficiency of the sensor), used as such
+        :param bool correct_absorption: correct for the efficiency of the sensor (see `sensor_efficiency`).
+               None (default) corrects when the parallax is activated, True forces the correction
+               (the efficiency has to be known: parallax or `set_sensor_efficiency`), False disables it.
         :param ndarray variance: the variance of the signal
         :param str error_model: can be "poisson" to assume a poissonian detector (variance=I) or "azimuthal" to take the std² in each ring (better, more expenive)
         :param unit: unit to be used for integration
@@ -1378,6 +1409,8 @@ class AzimuthalIntegrator(Integrator):
             polarization = _polarization_crc = None
         else:
             polarization, _polarization_crc = self.polarization(data.shape, polarization_factor, with_checksum=True)
+
+        absorption, _absorption_crc = self._normalize_absorption(data.shape, correct_absorption, absorption)
 
         if (method.algo_lower == "csr"):
             "This is the only method implemented for now ..."
@@ -1725,6 +1758,7 @@ class AzimuthalIntegrator(Integrator):
                    dark=None,
                    flat=None,
                    absorption=None,
+                   correct_absorption=None,
                    method=("no", "csr", "cython"),
                    unit=units.Q,
                    thres=5.0,
@@ -1765,7 +1799,10 @@ class AzimuthalIntegrator(Integrator):
 
         :param ndarray dark: dark noise image
         :param ndarray flat: flat field image
-        :param ndarray absorption: Detector absorption (image)
+        :param ndarray absorption: absorption correction image (efficiency of the sensor), used as such
+        :param bool correct_absorption: correct for the efficiency of the sensor (see `sensor_efficiency`).
+               None (default) corrects when the parallax is activated, True forces the correction
+               (the efficiency has to be known: parallax or `set_sensor_efficiency`), False disables it.
         :param ndarray variance: the variance of the signal
         :param str error_model: can be "poisson" to assume a poissonian detector (variance=I) or "azimuthal" to take the std² in each ring (better, more expenive)
         :param unit: unit to be used for integration
@@ -1784,7 +1821,9 @@ class AzimuthalIntegrator(Integrator):
         The standard deviation is usually smaller than previously and the signal cleaner.
         It is also slightly faster.
 
-        The case neither `error_model`, nor `variance` is provided, fall-back on a poissonian model.
+        The sigma-clipping needs the variance.
+        The case neither `error_model`, nor `variance` is provided, fall-back on a poissonian model
+        and a warning is issued: this is only valid for a detector counting photons, image not normalized.
 
         """
         for k in kwargs:
@@ -1798,6 +1837,11 @@ class AzimuthalIntegrator(Integrator):
             if variance.size != data.size:
                 raise RuntimeError("variance array shape does not match data shape")
             error_model = ErrorModel.VARIANCE
+        if not error_model.do_variance:
+            logger.warning("sigma_clip: NEITHER `error_model` NOR `variance` PROVIDED: the variance cannot be determined, "
+                           "falling back on a POISSONIAN model. This is only valid for raw photon counts, "
+                           "otherwise THE RESULTS ARE WRONG. Provide `error_model` or `variance` explicitly.")
+            error_model = ErrorModel.POISSON
 
         unit = units.to_unit(unit)
         if radial_range:
@@ -1858,6 +1902,8 @@ class AzimuthalIntegrator(Integrator):
             polarization = _polarization_crc = None
         else:
             polarization, _polarization_crc = self.polarization(data.shape, polarization_factor, with_checksum=True)
+
+        absorption, _absorption_crc = self._normalize_absorption(data.shape, correct_absorption, absorption)
 
         if (method.algo_lower == "csr"):
             "This is the only method implemented for now ..."

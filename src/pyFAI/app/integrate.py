@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/08/2026"
+__date__ = "10/11/2026"
 __satus__ = "production"
 
 import collections
@@ -41,7 +41,7 @@ import logging
 import os.path
 import sys
 import time
-from argparse import ArgumentParser
+from argparse import ArgumentParser, BooleanOptionalAction
 
 import fabio
 import numpy
@@ -785,6 +785,9 @@ def integrate_shell(options, args):
                                              observer.show_info):
         if options.monitor_key is not None:
             wc.monitor_name = options.monitor_key
+        # getattr: callers may provide their own options object
+        if getattr(options, "correct_absorption", None) is not None:
+            wc.correct_absorption = options.correct_absorption
         filenames = args
         output = options.output
         result = process(filenames, output, wc, observer, options.write_mode)
@@ -849,6 +852,9 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
                         On EDF files, values from 'counter_pos' can be accessed \
                         by using the expected mnemonic. \
                         For example 'counter/bmon'.")
+    parser.add_argument("--correct-absorption", dest="correct_absorption",
+                        action=BooleanOptionalAction, default=None,
+                        help="Correct for the efficiency of the sensor (absorption in the sensor volume). By default, the correction is applied when the parallax is activated in the poni-file. Applies without GUI, else edit the JSON file. Use --correct-absorption to force it (the sensor has to be known) or --no-correct-absorption to disable it.")
     parser.add_argument("--delete",
                         dest="delete_mode",
                         action="store_true",
@@ -884,6 +890,9 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=697348"""
     options.write_mode = write_mode
 
     if options.gui:
+        if options.correct_absorption is not None:
+            logger.warning("--correct-absorption/--no-correct-absorption is not used with the GUI: "
+                           "use --no-gui or set `correct_absorption` in the JSON configuration file.")
         result = integrate_gui(options, args)
     else:
         result = integrate_shell(options, args)

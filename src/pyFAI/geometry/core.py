@@ -39,7 +39,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "28/08/2026"
+__date__ = "10/11/2026"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -121,6 +121,8 @@ class Geometry:
     """
 
     _LAST_POLARIZATION = "last_polarization"
+    _INJECTED_EFFICIENCY = "injected_sensor_efficiency"
+    _INJECTED_EFFICIENCY_CRC = "injected_sensor_efficiency_crc"
 
     # To ease the copy of an instance. Mutable attributes are caches which are regenerated on use
     _IMMUTABLE_ATTRS = (
@@ -1595,6 +1597,82 @@ class Geometry:
             return (dssa, self._cached_array[key_crc])
         else:
             return dssa
+
+    def set_sensor_efficiency(self, efficiency):
+        """Inject the efficiency of the sensor for each pixel.
+
+        This is meant for the case where the parallax is not activated, so
+        that the efficiency cannot be calculated by `sensor_efficiency`.
+        The array is converted to float32 and its checksum calculated once.
+        Like all the cached arrays, it is dropped by `reset`, i.e. when the geometry
+        (or the parallax) changes: a stale array would be wrong, no array is better.
+        The injected array takes precedence over the calculated one.
+
+        :param efficiency: 2D array with the efficiency (between 0 and 1) of every pixel,
+                           None to remove the injected array.
+        """
+        if efficiency is None:
+            self._cached_array.pop(self._INJECTED_EFFICIENCY, None)
+            self._cached_array.pop(self._INJECTED_EFFICIENCY_CRC, None)
+            return
+        efficiency = numpy.ascontiguousarray(efficiency, dtype=numpy.float32)
+        if efficiency.ndim != 2:
+            raise RuntimeError("The sensor efficiency should be a 2D array")
+        self._cached_array[self._INJECTED_EFFICIENCY_CRC] = crc32(efficiency)
+        self._cached_array[self._INJECTED_EFFICIENCY] = efficiency
+
+    def sensor_efficiency(self, shape=None, with_checksum=False):
+        """Generate an array with the efficiency of the sensor for each pixel.
+
+        The beam crosses the sensor with the incidence angle alpha, so the
+        fraction of photons absorbed (and detected) is, from Beer-Lambert's law:
+
+        .. math::
+
+            \\eta(\\alpha) = 1 - exp(-\\mu \\cdot t / cos(\\alpha))
+
+        The array injected with `set_sensor_efficiency` is returned if any.
+        Else the sensor (absorption coefficient µ and thickness t) is the one of the
+        parallax correction: the efficiency is only calculated when the parallax
+        has been activated with `enable_parallax`. Without parallax, or with a
+        sensor of unknown thickness, there is nothing to calculate and
+        None is returned.
+
+        The array is meant to be given as `absorption` to the integrators.
+        Like `solidAngleArray`, it is cached until the geometry is reset.
+
+        :param shape: shape of the array expected, guessed from the detector by default
+        :param with_checksum: returns the array _and_ its checksum as a 2-tuple
+        :return: 2D float32 array (or tuple with the checksum), None if the sensor is unknown
+        """
+        eff = self._cached_array.get(self._INJECTED_EFFICIENCY)
+        if eff is not None:
+            if (shape is not None) and (tuple(shape) != eff.shape):
+                raise RuntimeError(f"The injected sensor efficiency has shape {eff.shape}, not {tuple(shape)}")
+            if with_checksum:
+                return (eff, self._cached_array[self._INJECTED_EFFICIENCY_CRC])
+            return eff
+        parallax = self._parallax
+        sensor = None if parallax is None else parallax.sensor
+        thickness = getattr(sensor, "thickness", None)
+        if not thickness:
+            return None
+        shape = self.get_shape(shape)
+        if shape is None:
+            raise RuntimeError(
+                "You should provide a shape if the geometry is not yet initialized"
+            )
+        key = "sensor_efficiency"
+        key_crc = "sensor_efficiency_crc"
+        eff = self._cached_array.get(key)
+        if eff is None or eff.shape != tuple(shape):
+            cosa = numpy.fromfunction(self.cos_incidence, shape, dtype=numpy.float64)
+            eff = (-numpy.expm1(-sensor.mu * thickness / cosa)).astype(numpy.float32)
+            self._cached_array[key_crc] = crc32(eff)
+            self._cached_array[key] = eff
+        if with_checksum:
+            return (eff, self._cached_array[key_crc])
+        return eff
 
     def get_config(self):
         """

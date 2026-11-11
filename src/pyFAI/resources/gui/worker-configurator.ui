@@ -333,6 +333,21 @@
         </property>
        </widget>
       </item>
+      <item row="5" column="1" colspan="3">
+       <widget class="QCheckBox" name="do_absorption">
+        <property name="toolTip">
+         <string>Correct the efficiency of the sensor (absorption in the sensor volume).
+Partially checked (default): automatic, i.e. corrected when the parallax is activated in the geometry.
+Checked: always corrected (the sensor has to be known). Unchecked: never corrected.</string>
+        </property>
+        <property name="text">
+         <string>Absorption corrections</string>
+        </property>
+        <property name="tristate">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
@@ -997,6 +1012,7 @@
   <tabstop>do_polarization</tabstop>
   <tabstop>polarization_factor</tabstop>
   <tabstop>do_solid_angle</tabstop>
+  <tabstop>do_absorption</tabstop>
   <tabstop>do_2D</tabstop>
   <tabstop>radial_unit</tabstop>
   <tabstop>nbpt_rad</tabstop>

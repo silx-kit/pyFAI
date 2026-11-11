@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "19/03/2026"
+__date__ = "10/11/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -40,7 +40,7 @@ import logging
 import os
 import posixpath
 import time
-from argparse import ArgumentParser
+from argparse import ArgumentParser, BooleanOptionalAction
 from string import digits as DIGITS
 from threading import Event
 from urllib.parse import urlparse
@@ -227,6 +227,9 @@ If the number of files is too large, use double quotes like "*.edf" """
                             help="Use the Graphical User Interface", default=True)
         parser.add_argument("--no-gui", dest="gui", action="store_false",
                             help="Do not use the Graphical User Interface", default=True)
+        parser.add_argument("--correct-absorption", dest="correct_absorption",
+                            action=BooleanOptionalAction, default=None,
+                            help="Correct for the efficiency of the sensor (absorption in the sensor volume). By default, the correction is applied when the parallax is activated in the poni-file. Use --correct-absorption to force it (the sensor has to be known) or --no-correct-absorption to disable it.")
         parser.add_argument("--config", dest="config", default=None,
                             help="provide a JSON configuration file")
         options = parser.parse_args(args=sysargv)
@@ -335,6 +338,9 @@ If the number of files is too large, use double quotes like "*.edf" """
                 ai.poni = PoniFile(self.poni)
             else:
                 logger.warning("No such poni file: {options.poni}")
+
+        if options.correct_absorption is not None:
+            ai.correct_absorption = options.correct_absorption
 
         if options.fast is None:
             self.nbpt_fast = config.nbpt_fast or self.nbpt_fast

@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/08/2026"
+__date__ = "10/11/2026"
 __status__ = "production"
 
 from typing import ClassVar
@@ -93,6 +93,9 @@ class WorkerConfigurator(qt.QWidget):
         self.__only1dIntegration = False
 
         self.geometry_label.setGeometryModel(self.__geometryModel)
+
+        # automatic by default (not set in the ui file: the loader cannot read Qt::PartiallyChecked)
+        self.__setCorrectAbsorption(None)
 
         # Connect widget to edit the wavelength
         wavelengthUnit = DataModel()
@@ -301,6 +304,21 @@ class WorkerConfigurator(qt.QWidget):
     def getPoniDict(self):
         return self.getPoni().as_dict()
 
+    def __getCorrectAbsorption(self) -> bool | None:
+        """Value of the tristate checkbox: None (automatic) when partially checked"""
+        state = self.do_absorption.checkState()
+        if state == qt.Qt.CheckState.PartiallyChecked:
+            return None
+        return state == qt.Qt.CheckState.Checked
+
+    def __setCorrectAbsorption(self, value: bool | None):
+        """Set the tristate checkbox from None (automatic), True or False"""
+        if value is None:
+            state = qt.Qt.CheckState.PartiallyChecked
+        else:
+            state = qt.Qt.CheckState.Checked if value else qt.Qt.CheckState.Unchecked
+        self.do_absorption.setCheckState(state)
+
     def _getIntegrationActiveTab(self) -> int:
         # tab_index = 0 -> Azimuthal integration
         # tab_index = 1 -> Fiber integration
@@ -367,6 +385,7 @@ class WorkerConfigurator(qt.QWidget):
         # processing-config
         wc.chi_discontinuity_at_0 = bool(self.chi_discontinuity_at_0.isChecked())
         wc.correct_solid_angle = bool(self.do_solid_angle.isChecked())
+        wc.correct_absorption = self.__getCorrectAbsorption()
         wc.error_model = ErrorModel(self.error_model.currentIndex())
 
         method = self.__method
@@ -464,6 +483,7 @@ class WorkerConfigurator(qt.QWidget):
         # processing-config
         wc.chi_discontinuity_at_0 = bool(self.chi_discontinuity_at_0.isChecked())
         wc.correct_solid_angle = bool(self.do_solid_angle.isChecked())
+        wc.correct_absorption = self.__getCorrectAbsorption()
         wc.error_model = ErrorModel(self.error_model.currentIndex())
 
         method = self.__method
@@ -626,6 +646,7 @@ class WorkerConfigurator(qt.QWidget):
             self.sample_orientation.setText(str(unit_ip.sample_orientation))
 
         self.do_solid_angle.setChecked(bool(wc.correct_solid_angle))
+        self.__setCorrectAbsorption(wc.correct_absorption)
         self.do_dummy.setChecked(wc.do_dummy)
         self.do_dark.setChecked(wc.do_dark)
         self.do_flat.setChecked(wc.do_flat)
