@@ -66,6 +66,14 @@ Options:
    can be accessed by using the expected mnemonic. For example
    'counter/bmon'.
 
+**--correct-absorption**, **--no-correct-absorption**
+   Correct for the efficiency of the sensor (absorption in the sensor
+   volume). By default, the correction is applied when the parallax is
+   activated in the poni-file. Use **--correct-absorption** to force it
+   (the sensor has to be known) or **--no-correct-absorption** to disable
+   it. Only used without GUI (**--no-gui**): with the GUI, set
+   `correct_absorption` in the JSON configuration file.
+
 **--delete**
    Delete the destination file if already exists
 

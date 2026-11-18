@@ -13,6 +13,7 @@ Change-log of versions
   * `MultiModule.display()` draws the modules of a detector and the displacement of the corners highlighted (#2956)
   * Median filtering on GPU is 3x faster: the comb sort now spreads over the whole workgroup and sorts (key, index) pairs, in local memory when the bin fits.
   * `Integrate2dResult.rebin1d()` gains `radial_range` and `azimuth_range`, to extract the pattern of an azimuthal sector out of a single 2D integration (#2961)
+  * Sensor efficiency (absorption in the sensor volume) is corrected by `integrate1d`/`integrate2d` as soon as the parallax is enabled. This changes the reported intensities with parallax (#2953)
   * Equations of state of calibrants, in `pyFAI.crystallography.eos`: the d-spacings can be recalculated at the pressure and temperature
     of the experiment, and a calibrant can be used as pressure gauge or as thermometer (#2371).
     Models: Vinet, Birch-Murnaghan, Murnaghan, thermal expansion, P-V-T composite, thermal pressure (JCPDS/Dioptas) and (expanded) Mie-Grüneisen-Debye (Dorogokupets & Dewaele, 2007).

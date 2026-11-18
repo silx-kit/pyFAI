@@ -88,6 +88,13 @@ optional arguments:
 **--config** CONFIG
    provide a JSON configuration file
 
+**--correct-absorption**, **--no-correct-absorption**
+   Correct for the efficiency of the sensor (absorption in the sensor
+   volume). By default, the correction is applied when the parallax is
+   activated in the poni-file. Use **--correct-absorption** to force it
+   (the sensor has to be known) or **--no-correct-absorption** to disable
+   it.
+
 Bugs: Many, see hereafter: 1)If the number of files is too large, use
 double quotes "*.edf" 2)There is a known bug on Debian7 where importing
 a large number of file can take much longer than the integration itself:

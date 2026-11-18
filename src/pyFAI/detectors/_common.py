@@ -32,7 +32,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "04/09/2026"
+__date__ = "10/11/2026"
 __status__ = "stable"
 
 import copy
@@ -280,6 +280,8 @@ class Detector(metaclass=DetectorMeta):
         self._orientation = orientation
 
         if sensor is None:
+            sensor = self.default_sensor()
+        if sensor is None:
             logger.info("No sensor configuration provided; using default behaviour.")
         else:
             self.sensor = sensor  # the property validates and converts
@@ -383,8 +385,28 @@ class Detector(metaclass=DetectorMeta):
         self._orientation = Orientation(config.get("orientation", 0))
         # the property converts the serialized dict, `SensorConfig(dict)` would
         # store it as the `material` field instead
-        self.sensor = config.get("sensor")
+        # a configuration without sensor (old PONI file) gets the default of the detector
+        sensor = config.get("sensor")
+        self.sensor = self.default_sensor() if sensor is None else sensor
         return self
+
+    @classmethod
+    def default_sensor(cls) -> SensorConfig | None:
+        """Sensor assumed for this detector when the user does not provide one.
+
+        This is the first entry of `SENSORS`, the allowed sensors of the detector.
+        When several are possible, it is logged that the first one is assumed.
+        Detectors which do not know their sensor (empty `SENSORS`) return None.
+
+        :return: a new SensorConfig (the instances are mutable), or None
+        """
+        if not cls.SENSORS:
+            return None
+        sensor = cls.SENSORS[0].copy()
+        if len(cls.SENSORS) > 1:
+            logger.info("%s has several possible sensors [%s]: assuming %s",
+                        cls.__name__, "|".join(str(i) for i in cls.SENSORS), sensor)
+        return sensor
 
     def get_config(self):
         """Return the configuration with arguments to the constructor

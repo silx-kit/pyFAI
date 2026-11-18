@@ -29,7 +29,7 @@ __author__ = "Edgar Gutiérrez Fernández "
 __contact__ = "edgar.gutierrez-fernandez@esr.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "08/10/2025"
+__date__ = "10/11/2026"
 __status__ = "stable"
 __docformat__ = 'restructuredtext'
 
@@ -208,6 +208,7 @@ class FiberIntegrator(AzimuthalIntegrator):
                         method=("no", "histogram", "cython"),
                         normalization_factor=1.0,
                         angle_unit="rad",
+                        absorption=None, correct_absorption=None,
                         **kwargs) -> Integrate1dFiberResult:
         """Calculate the integrated profile curve along a specific FiberUnit, additional input for sample_orientation
 
@@ -236,6 +237,10 @@ class FiberIntegrator(AzimuthalIntegrator):
         :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :param float normalization_factor: Value of a normalization monitor
         :param str angle_unit: rad/deg, defines the units if incident and tilt angles
+        :param ndarray absorption: absorption correction image (efficiency of the sensor), used as such
+        :param bool correct_absorption: correct for the efficiency of the sensor (see `sensor_efficiency`).
+               None (default) corrects when the parallax is activated, True forces the correction
+               (the efficiency has to be known: parallax or `set_sensor_efficiency`), False disables it.
         :return: chi bins center positions and regrouped intensity
         :rtype: Integrate1dResult
         """
@@ -299,6 +304,7 @@ class FiberIntegrator(AzimuthalIntegrator):
                                   polarization_factor=polarization_factor,
                                   dark=dark, flat=flat, method=method,
                                   normalization_factor=normalization_factor,
+                                  absorption=absorption, correct_absorption=correct_absorption,
                                   **kwargs)
 
         if vertical_integration:
@@ -367,6 +373,7 @@ class FiberIntegrator(AzimuthalIntegrator):
                           method=("no", "histogram", "cython"),
                           normalization_factor=1.0,
                           angle_unit="rad",
+                          absorption=None, correct_absorption=None,
                           **kwargs) -> Integrate2dFiberResult:
         """Reshapes the data pattern as a function of two FiberUnits, additional inputs for sample_orientation
 
@@ -394,6 +401,10 @@ class FiberIntegrator(AzimuthalIntegrator):
         :param IntegrationMethod method: IntegrationMethod instance or 3-tuple with (splitting, algorithm, implementation)
         :param float normalization_factor: Value of a normalization monitor
         :param str angle_unit: rad/deg, defines the units if incident and tilt angles
+        :param ndarray absorption: absorption correction image (efficiency of the sensor), used as such
+        :param bool correct_absorption: correct for the efficiency of the sensor (see `sensor_efficiency`).
+               None (default) corrects when the parallax is activated, True forces the correction
+               (the efficiency has to be known: parallax or `set_sensor_efficiency`), False disables it.
         :param bool use_missing_wedge: when set, mask-out all bins present in the missing edge and restores compatibility with pixel-splitting methods
         :return: regrouped intensity and unit arrays
         :rtype: Integrate2dResult
@@ -439,6 +450,7 @@ class FiberIntegrator(AzimuthalIntegrator):
                                   polarization_factor=polarization_factor,
                                   dark=dark, flat=flat, method=method,
                                   normalization_factor=normalization_factor,
+                                  absorption=absorption, correct_absorption=correct_absorption,
                                   radial_range=ip_range,
                                   azimuth_range=oop_range,
                                   unit=(unit_ip, unit_oop),

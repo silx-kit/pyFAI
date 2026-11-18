@@ -55,6 +55,8 @@ List of attributes as function of the version:
    rename some attributes
    * `integrator_name` -> `integrator_method`
    * `polarization_factor` -> `polarization_description`
+   * `correct_absorption`: None (default) follows the parallax (stored in `poni`), True/False force it.
+     Absent from older files, hence None: no new version number was needed.
 
 In a similar way, PixelWiseWorkerConfig and DistortionWorkerConfig are dataclasses
 to hold parameters for handling PixelWiseWorker and DistortionWorker, respectively.
@@ -65,7 +67,7 @@ All those data-classes are serializable to JSON.
 __author__ = "Jérôme Kieffer"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/08/2026"
+__date__ = "10/11/2026"
 __docformat__ = 'restructuredtext'
 __all__ = ["WorkerConfig", "WorkerFiberConfig", "asdict", "fields"]
 
@@ -444,6 +446,7 @@ class WorkerConfig:
     val_dummy: float = None
     delta_dummy: float = None
     correct_solid_angle: bool = True
+    correct_absorption: bool | None = None
     dark_current: str | list = None
     flat_field: str | list = None
     mask_file: str = None
