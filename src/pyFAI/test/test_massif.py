@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "18/11/2026"
 
 import logging
 import unittest
@@ -93,6 +93,33 @@ class TestMassif(unittest.TestCase):
         if peaks:
             massif.find_peaks([int(i) for i in peaks[0]], stdout=None)
         massif.get_median_data()
+
+    def test_peaks_from_area_lattice(self):
+        """Peaks of a noise-free lattice of gaussians: every one is found once, with `dmin` smaller than the pitch"""
+        pitch, size = 10, 100
+        centers = numpy.arange(pitch // 2, size, pitch)
+        y, x = numpy.ogrid[:size, :size]
+        image = numpy.zeros((size, size), dtype=numpy.float32)
+        for cy in centers:
+            for cx in centers:
+                image += numpy.exp(-((y - cy) ** 2 + (x - cx) ** 2) / 8.0)
+        peaks = numpy.array(Massif(image).peaks_from_area(numpy.ones(image.shape, dtype=bool), keep=1000, dmin=pitch / 2))
+        self.assertEqual(len(peaks), centers.size ** 2, "One peak per gaussian")
+        for cy in centers:
+            for cx in centers:
+                dist = numpy.hypot(peaks[:, 0] - cy, peaks[:, 1] - cx)
+                self.assertEqual((dist < 1).sum(), 1, f"One peak near ({cy}, {cx})")
+
+    def test_peaks_from_area_dmin(self):
+        """Peaks of a noisy image are all further apart than `dmin` (also with dmin=0: no duplicates)"""
+        image = UtilsTest.get_rng().poisson(10, (100, 100))
+        area = numpy.ones(image.shape, dtype=bool)
+        for dmin in (0.0, 0.5, 3.0, 8.0):
+            peaks = numpy.array(Massif(image).peaks_from_area(area, keep=10000, dmin=dmin))
+            self.assertGreater(len(peaks), 1, f"Peaks found with dmin={dmin}")
+            dist = numpy.hypot(*(peaks[:, None, :] - peaks[None, :, :]).transpose(2, 0, 1))
+            dist[numpy.diag_indices_from(dist)] = numpy.inf
+            self.assertGreater(dist.min(), dmin, f"Minimum distance between peaks with dmin={dmin}")
 
 
 def suite():

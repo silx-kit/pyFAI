@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 04/11/2026
+:Date: 18/11/2026
 :Keywords: changelog
 
 Change-log of versions
@@ -18,6 +18,7 @@ Change-log of versions
     of the experiment, and a calibrant can be used as pressure gauge or as thermometer (#2371).
     Models: Vinet, Birch-Murnaghan, Murnaghan, thermal expansion, P-V-T composite, thermal pressure (JCPDS/Dioptas) and (expanded) Mie-Grüneisen-Debye (Dorogokupets & Dewaele, 2007).
   * Read and write JCPDS (version 4) files, with the equation of state interpreted as in Dioptas, and a set of cards for Au, Pt, Rh, Re, W, Ta, Cu, Al, Fe, Al2O3, NaCl, Ne, Kr and Xe taken from the literature.
+  * `SingleGeometry.extract_cp` (automatic control points extraction) is 30 to 40 % faster on large detectors: the search for peaks no longer compares each candidate with all the peaks already found (#2999)
 
 - Bug fixes:
 
