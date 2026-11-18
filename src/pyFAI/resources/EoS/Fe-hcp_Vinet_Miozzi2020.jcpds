@@ -1,0 +1,32 @@
+VERSION:   4
+COMMENT: epsilon-iron (Fe), hcp, P6_3/mmc - Miozzi et al. (2020) Minerals 10, 100, doi:10.3390/min10020100, table 1
+COMMENT: Vinet fit at 300 K: V0=22.81 A3, K0=125(5) GPa, K0P=6.5(2), see Fe-hcp_BM3_Miozzi2020.jcpds for the 3rd order Birch-Murnaghan fit
+COMMENT: WARNING: the EOS keyword is a pyFAI extension, other programs read K0/K0P as Birch-Murnaghan
+COMMENT: Thermal model of the source: Mie-Gruneisen-Debye, thetaD=420 K (fixed), gamma0=1.11(1), q=0.3(3), reference 300 K, refined by the authors with the Birch-Murnaghan isotherm (MgO scale of Speziale et al. 2001)
+COMMENT: ALPHAT, DALPHADT, DK0DT, DK0PDT fitted on this model applied to the Vinet isotherm (thermal pressure, as in Dioptas) between 30 and 140 GPa and 300 and 3400 K: pressure within 0.10 GPa, temperature within 15 K
+COMMENT: epsilon-Fe is stable above about 16 GPa: V0 is an extrapolation
+COMMENT: c/a=1.603 read on the inset of Fig. 1 of Dewaele et al. (2006) Phys. Rev. Lett. 97, 215504, doi:10.1103/PhysRevLett.97.215504, at 20 GPa; c/a decreases to 1.597 at 150-200 GPa, not described by the EoS
+COMMENT: Intensities calculated (Cu Ka, Cromer-Mann form factor of Cl used for Fe, no thermal factor)
+K0:        125.000
+K0P:       6.500
+EOS:       VINET
+SYMMETRY:  HEXAGONAL
+A:         2.54226
+C:         4.07525
+VOLUME:    22.8100
+DK0DT:     1.9466e-03
+DK0PDT:    -4.7077e-05
+ALPHAT:    3.1140e-05
+DALPHADT:  5.0567e-13
+DIHKL:       2.2017    26.0   1   0   0
+DIHKL:       2.0376    26.6   0   0   2
+DIHKL:       1.9370   100.0   1   0   1
+DIHKL:       1.4955    13.1   1   0   2
+DIHKL:       1.2711    15.1   1   1   0
+DIHKL:       1.1561    17.1   1   0   3
+DIHKL:       1.1008     2.5   2   0   0
+DIHKL:       1.0785    19.5   1   1   2
+DIHKL:       1.0627    14.3   2   0   1
+DIHKL:       1.0188     3.0   0   0   4
+DIHKL:       0.9685     4.4   2   0   2
+DIHKL:       0.9246     4.5   1   0   4

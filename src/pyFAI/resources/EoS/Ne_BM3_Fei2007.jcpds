@@ -1,0 +1,20 @@
+VERSION:   4
+COMMENT: Solid neon (Ne), Fm-3m - Fei et al. (2007) PNAS 104, 9182-9186, doi:10.1073/pnas.0609013104, table 1
+COMMENT: 3rd order Birch-Murnaghan fit at 300 K, see Ne_Vinet_Fei2007.jcpds for the Vinet fit
+COMMENT: Thermal model of the source: Mie-Gruneisen-Debye, theta0=75.1 K, gamma0=2.05, q=0.6
+COMMENT: No thermal expansion: the model has no solution at 0 GPa above 330 K (solid neon is not stable at ambient pressure)
+COMMENT: Intensities calculated (Cu Ka, Cromer-Mann form factors, no thermal factor)
+K0:        1.430
+K0P:       8.020
+SYMMETRY:  CUBIC
+A:         4.46419
+VOLUME:    88.9670
+DIHKL:       2.5774   100.0   1   1   1
+DIHKL:       2.2321    47.0   2   0   0
+DIHKL:       1.5783    25.2   2   2   0
+DIHKL:       1.3460    25.4   3   1   1
+DIHKL:       1.2887     7.0   2   2   2
+DIHKL:       1.1160     2.9   4   0   0
+DIHKL:       1.0242     8.8   3   3   1
+DIHKL:       0.9982     8.3   4   2   0
+DIHKL:       0.9112     7.4   4   2   2

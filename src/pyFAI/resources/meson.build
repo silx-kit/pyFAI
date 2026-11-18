@@ -1,4 +1,5 @@
 subdir('calibration')
+subdir('EoS')
 subdir('elements')
 subdir('gui')
 subdir('openCL')

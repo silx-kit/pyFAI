@@ -1,0 +1,22 @@
+VERSION:   4
+COMMENT: Rhodium (Rh), Fm-3m - McHardy et al. (2024) Phys. Rev. B 109, 094113, doi:10.1103/PhysRevB.109.094113, table III
+COMMENT: Parameters optimized by the authors for Dioptas (thermal pressure) on their thermal model, between 298 and 3000 K and 0 and 200 GPa
+COMMENT: Thermal model of the source: AP2 isotherm (V0=13.764 A3/atom, K0=257.536 GPa, K0P=5.3578) with a Holland-Powell thermal pressure (alpha0=2.050e-5 /K, thetaE=779 K), table III, valid to 191 GPa and 2700 K
+COMMENT: Pressure within 0.6 GPa of the source model over this range, but temperature only within 40 K at 0 GPa (298-2000 K)
+COMMENT: 3rd order Birch-Murnaghan fit of the 298 K data alone: K0=261(3) GPa, K0P=5.11(8) (table I)
+COMMENT: Intensities calculated (Cu Ka, Cromer-Mann form factors, no thermal factor)
+K0:        260.540
+K0P:       5.114
+SYMMETRY:  CUBIC
+A:         3.80424
+VOLUME:    55.0560
+DK0DT:     -6.4300e-05
+DK0PDT:    -9.3000e-10
+ALPHAT:    2.9900e-05
+DALPHADT:  1.2700e-09
+DIHKL:       2.1964   100.0   1   1   1
+DIHKL:       1.9021    47.5   2   0   0
+DIHKL:       1.3450    29.0   2   2   0
+DIHKL:       1.1470    35.2   3   1   1
+DIHKL:       1.0982    10.5   2   2   2
+DIHKL:       0.9511     6.7   4   0   0
