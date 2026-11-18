@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "25/08/2026"
+__date__ = "04/11/2026"
 
 import copy
 import itertools
@@ -191,10 +191,10 @@ class TestCalibrant(unittest.TestCase):
             print(cal)
             # check for idempotence of the parser ...
             filename = Calibrant._get_abs_path(CALIBRANT_FACTORY.all[c])
-            with open(filename) as fd:
+            with open(filename, encoding="utf-8") as fd:
                 ref = numpy.array([i.strip() for i in fd])
             cal = str(CalibrantConfig.from_dspacing(filename=filename))
-            obt = numpy.array([i.strip() for i in cal.split(os.linesep)])
+            obt = numpy.array([i.strip() for i in cal.splitlines()])
             res = ref != obt
             self.assertFalse(res.any(), f"Non idempotent: `{c}` lines {numpy.where(res)[0]}: {ref[res]} vs {obt[res]}")
 

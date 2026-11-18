@@ -1,0 +1,19 @@
+VERSION:   4
+COMMENT: Tantalum (Ta), Im-3m - Dewaele et al. (2004) Phys. Rev. B 70, 094112, doi:10.1103/PhysRevB.70.094112, table II
+COMMENT: Vinet fit at room temperature up to 94 GPa (He medium), V0=18.035 A3/atom, K0 fixed to the ultrasonic value 194 GPa, K0P=3.52(3) on the ruby scale of the same study (P'R)
+COMMENT: Free fit on the same scale: K0=197.0(3.5) GPa, K0P=3.39(15)
+COMMENT: WARNING: the EOS keyword is a pyFAI extension, other programs read K0/K0P as Birch-Murnaghan
+COMMENT: No thermal model in the source
+COMMENT: Intensities calculated (Cu Ka, Cromer-Mann form factor of Pt used for Ta, no thermal factor)
+K0:        194.000
+K0P:       3.520
+EOS:       VINET
+SYMMETRY:  CUBIC
+A:         3.30407
+VOLUME:    36.0700
+DIHKL:       2.3363   100.0   1   1   0
+DIHKL:       1.6520    17.5   2   0   0
+DIHKL:       1.3489    36.3   2   1   1
+DIHKL:       1.1682    11.8   2   2   0
+DIHKL:       1.0448    18.5   3   1   0
+DIHKL:       0.9538     5.8   2   2   2

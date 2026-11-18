@@ -30,7 +30,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/06/2026"
+__date__ = "04/11/2026"
 __status__ = "development"
 __docformat__ = "restructuredtext"
 
@@ -45,6 +45,8 @@ from dataclasses import field
 from ..containers import Miller, Reflection, dataclass
 
 logger = logging.getLogger(__name__)
+# Reference temperature (K) of the thermal parameters of JCPDS files, as in Dioptas
+JCPDS_T_REF = 298.0
 
 _CELL_LATTICES = ("cubic", "tetragonal", "hexagonal", "rhombohedral",
                   "orthorhombic", "monoclinic", "triclinic")
@@ -146,7 +148,7 @@ class CalibrantConfig:
                 out.append(f"{ref.dspacing:12.8f} # {ref.hkl!s:10s}")
             else:
                 out.append(f"{ref.dspacing:12.8f}")
-        return os.linesep.join(out)
+        return "\n".join(out)
 
     @classmethod
     def from_DIF(cls, filename: str):
@@ -159,7 +161,7 @@ class CalibrantConfig:
         :return: CalibrantConfig instance
         """
         raw = []
-        with open(filename) as fd:
+        with open(filename, encoding="utf-8", errors="replace") as fd:
             for line in fd:
                 raw.append(line.strip())
         reflections = []
@@ -213,7 +215,7 @@ class CalibrantConfig:
         begining = True
         self = cls(filename=filename)
         raw = []
-        with open(filename) as f:
+        with open(filename, encoding="utf-8", errors="replace") as f:
             for line in f:
                 raw.append(line.strip())
 
@@ -398,22 +400,30 @@ class CalibrantConfig:
         used by the high-pressure community (Dioptas, GSECARS, ...).
 
         The compression parameters (K0, K0P, DK0DT, DK0PDT) and the thermal
-        expansion (ALPHAT, DALPHAT) are turned into an EquationOfState
-        instance stored in the ``eos`` attribute: a PVT composite when both
-        are present, the bare model otherwise.
+        expansion (ALPHAT, DALPHADT) are turned into an EquationOfState
+        instance stored in the ``eos`` attribute: a ThermalPressure composite
+        when both are present, as interpreted by Dioptas (reference
+        temperature of 298 K, thermal pressure added to the isotherm), the
+        bare model otherwise.
+
+        The compression model is Birch-Murnaghan, as assumed by the format.
+        The optional keyword ``EOS``, an extension of the format specific to
+        pyFAI, selects another model with the same parameters (K0, K0P), i.e.
+        ``EOS: VINET`` or ``EOS: MURNAGHAN``.
 
         :param filename: name of the jcpds-file
         :return: CalibrantConfig instance
         """
         from ..crystallography.cell import Cell  # lazy loading to prevent cyclic imports
-        from ..crystallography.eos import BirchMurnaghan, PVT, VolumeExpansion
+        from ..crystallography.eos import BirchMurnaghan, EquationOfState, ThermalPressure, VolumeExpansion
 
         version = None
         symmetry = None
+        model = BirchMurnaghan.name
         comments = []
         values = {}
         reflections = []
-        with open(filename) as fd:
+        with open(filename, encoding="utf-8", errors="replace") as fd:
             for line in fd:
                 if ":" not in line:
                     continue
@@ -426,6 +436,8 @@ class CalibrantConfig:
                     comments.append(value)
                 elif tag == "SYMMETRY":
                     symmetry = value.upper()
+                elif tag == "EOS":
+                    model = value
                 elif tag == "DIHKL":
                     words = value.replace(",", " ").split()
                     if len(words) >= 5:
@@ -461,14 +473,14 @@ class CalibrantConfig:
 
         isothermal = thermal = eos = None
         if "K0" in values:
-            isothermal = BirchMurnaghan(k0=values["K0"], k0p=values.get("K0P", 4.0))
+            isothermal = EquationOfState.factory(model, k0=values["K0"], k0p=values.get("K0P", 4.0))
         if values.get("ALPHAT"):
             coefficients = [values["ALPHAT"]]
-            if values.get("DALPHAT"):
-                coefficients.append(values["DALPHAT"])
-            thermal = VolumeExpansion(coefficients)
+            if values.get("DALPHADT"):
+                coefficients.append(values["DALPHADT"])
+            thermal = VolumeExpansion(coefficients, t0=JCPDS_T_REF)
         if isothermal and thermal:
-            eos = PVT(isothermal, thermal,
+            eos = ThermalPressure(isothermal, thermal,
                       dk0dt=values.get("DK0DT", 0.0),
                       dk0pdt=values.get("DK0PDT", 0.0),
                       v0=cell.volume)
@@ -490,12 +502,17 @@ class CalibrantConfig:
         Requires a parseable ``cell`` description. The ``eos`` attribute, when
         present, must map onto the JCPDS parametrization: a Birch-Murnaghan
         compression and/or a polynomial volume expansion (possibly combined in
-        a PVT composite); other models raise a ValueError.
+        a ThermalPressure composite); other models raise a ValueError.
+        A PVT composite is exported with a warning: its parameters are
+        interpreted as a ThermalPressure model when read back.
+        Vinet and Murnaghan compressions are exported with the keyword ``EOS``,
+        an extension of the format specific to pyFAI: other programs (Dioptas)
+        ignore it and would interpret the parameters as Birch-Murnaghan ones.
 
         :return: content of the JCPDS file as a string
         """
-        from ..crystallography.eos import (BirchMurnaghan, LatticeExpansion, PVT,
-                                           ThermalExpansion, VolumeExpansion)
+        from ..crystallography.eos import (BirchMurnaghan, LatticeExpansion, Murnaghan, PVT,
+                                           ThermalExpansion, ThermalPressure, Vinet, VolumeExpansion)
 
         lines = ["VERSION: 4"]
         if self.description or self.name:
@@ -504,6 +521,8 @@ class CalibrantConfig:
         isothermal = thermal = None
         dk0dt = dk0pdt = 0.0
         if isinstance(self.eos, PVT):
+            if not isinstance(self.eos, ThermalPressure):
+                logger.warning("JCPDS files describe a thermal-pressure model, the PVT parameters will be interpreted differently")
             isothermal, thermal = self.eos.isothermal, self.eos.thermal
             dk0dt, dk0pdt = self.eos.dk0dt, self.eos.dk0pdt
         elif isinstance(self.eos, (ThermalExpansion, LatticeExpansion, VolumeExpansion)):
@@ -511,7 +530,9 @@ class CalibrantConfig:
         elif self.eos is not None:
             isothermal = self.eos
         if isothermal is not None:
-            if not isinstance(isothermal, BirchMurnaghan):
+            if isinstance(isothermal, (Vinet, Murnaghan)):
+                lines.append(f"EOS: {isothermal.name.upper()}")
+            elif not isinstance(isothermal, BirchMurnaghan):
                 raise ValueError(f"JCPDS assumes a Birch-Murnaghan compression model, unable to export {isothermal!r}")
             lines.append(f"K0: {isothermal.k0:.10g}")
             lines.append(f"K0P: {isothermal.k0p:.10g}")
@@ -520,13 +541,13 @@ class CalibrantConfig:
             if dk0pdt:
                 lines.append(f"DK0PDT: {dk0pdt:.10g}")
         if thermal is not None:
-            dalphat = 0.0
+            dalphadt = 0.0
             if isinstance(thermal, VolumeExpansion):
                 if len(thermal.coefficients) > 2:
                     raise ValueError("JCPDS supports at most 2 volume-expansion coefficients")
                 alphat = thermal.coefficients[0]
                 if len(thermal.coefficients) > 1:
-                    dalphat = thermal.coefficients[1]
+                    dalphadt = thermal.coefficients[1]
             elif isinstance(thermal, ThermalExpansion) and not thermal.alpha1 and not thermal.alpha2:
                 logger.warning("Exponential thermal expansion approximated as linear in the JCPDS file")
                 alphat = thermal.alpha0
@@ -534,12 +555,12 @@ class CalibrantConfig:
                 logger.warning("Lattice expansion converted to a volume expansion, truncated at 2nd order, in the JCPDS file")
                 coefficients = thermal.coefficients + [0.0]
                 alphat = 3.0 * coefficients[0]
-                dalphat = 3.0 * coefficients[1] + 3.0 * coefficients[0] ** 2
+                dalphadt = 3.0 * coefficients[1] + 3.0 * coefficients[0] ** 2
             else:
                 raise ValueError(f"Unable to export thermal model {thermal!r} to JCPDS")
             lines.append(f"ALPHAT: {alphat:.10g}")
-            if dalphat:
-                lines.append(f"DALPHAT: {dalphat:.10g}")
+            if dalphadt:
+                lines.append(f"DALPHADT: {dalphadt:.10g}")
 
         cell = self.to_cell()
         if cell is None:
@@ -566,7 +587,7 @@ class CalibrantConfig:
             hkl = reflection.hkl if reflection.hkl else (0, 0, 0)
             intensity = 100.0 if reflection.intensity is None else reflection.intensity
             lines.append(f"DIHKL: {reflection.dspacing:.8f} {intensity:g} {hkl[0]} {hkl[1]} {hkl[2]}")
-        return os.linesep.join(lines)
+        return "\n".join(lines)
 
     def save_JCPDS(self, filename: str):
         """Save the calibrant structure into a JCPDS (version 4) file.

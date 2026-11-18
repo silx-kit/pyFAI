@@ -1,0 +1,25 @@
+VERSION:   4
+COMMENT: Gold (Au), Fm-3m - Dorogokupets & Dewaele (2007) High Press. Res. 27, 431-446, doi:10.1080/08957950701659700, table 1
+COMMENT: Vinet fit at 298.15 K, V0 not given by the source, built on the data of Dewaele et al. (2004) Phys. Rev. B 70, 094112, doi:10.1103/PhysRevB.70.094112: table II, 16.962 A3/atom
+COMMENT: WARNING: the EOS keyword is a pyFAI extension, other programs read K0/K0P as Birch-Murnaghan
+COMMENT: Thermal model of the source: Mie-Gruneisen-Debye, theta0=170 K, gamma0=2.89, gamma_inf=1.54, beta=4.36
+COMMENT: ALPHAT, DALPHADT, DK0DT, DK0PDT fitted on this model (thermal pressure, as in Dioptas) between 298 and 1000 K, from 0 GPa down to V/V0=0.8: pressure within 0.04 GPa, temperature within 0.2 K at 0 GPa
+COMMENT: Intensities calculated (Cu Ka, Cromer-Mann form factors, no thermal factor)
+K0:        167.000
+K0P:       5.900
+EOS:       VINET
+SYMMETRY:  CUBIC
+A:         4.07861
+VOLUME:    67.8480
+DK0DT:     -6.6176e-03
+DK0PDT:    2.6009e-04
+ALPHAT:    4.1687e-05
+DALPHADT:  2.6701e-09
+DIHKL:       2.3548   100.0   1   1   1
+DIHKL:       2.0393    49.4   2   0   0
+DIHKL:       1.4420    33.0   2   2   0
+DIHKL:       1.2297    39.8   3   1   1
+DIHKL:       1.1774    11.7   2   2   2
+DIHKL:       1.0197     6.5   4   0   0
+DIHKL:       0.9357    25.5   3   3   1
+DIHKL:       0.9120    26.2   4   2   0

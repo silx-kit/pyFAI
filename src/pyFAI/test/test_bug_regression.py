@@ -35,13 +35,15 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "2015-2025 European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "02/09/2026"
+__date__ = "10/11/2026"
 
 import copy
+import json
 import logging
 import os
 import subprocess
 import sys
+import tempfile
 import unittest
 from io import StringIO
 from math import pi
@@ -51,12 +53,17 @@ import fabio
 import numpy
 
 from .. import detectors, load, units
-from ..detectors import detector_factory
+from ..detectors import detector_factory, sensors
+from ..diffmap import DiffMap
 from ..ext import splitPixel
 from ..integrator.azimuthal import AzimuthalIntegrator
+from ..integrator.fiber import FiberIntegrator
+from ..io.integration_config import WorkerConfig, WorkerFiberConfig
 from ..io.ponifile import PoniFile
+from ..multi_geometry import MultiGeometry, MultiGeometryFiber
 from ..opencl import ocl
-from ..utils import mathutil
+from ..utils import crc32, mathutil
+from ..worker import Worker, WorkerFiber
 from .utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
@@ -942,6 +949,321 @@ class TestBug1703(unittest.TestCase):
             self.assertLess(mathutil.rwp((res_azim_f[0], res_azim_f[2]), (res_pois_1[0], res_pois_1[2]), scale=factor), 5, f"sigma Azimuthal, unscaled, {method}")
 
 
+class TestBug2953(unittest.TestCase):
+    """#2953: the sensor efficiency (`absorption`) is never computed from `Detector.sensor`"""
+    SHAPE = (200, 200)
+    THICKNESS = 450e-6  # m
+    WAVELENGTH = 1e-10  # m, i.e. 12.398 keV
+    ENERGY = 12.398419843320026  # keV
+
+    @classmethod
+    def setUpClass(cls):
+        cls.sensor = sensors.SensorConfig("Si", cls.THICKNESS)
+        cls.detector = detectors.Detector(500e-6, 500e-6, max_shape=cls.SHAPE, sensor=cls.sensor)
+        cls.ai = AzimuthalIntegrator(dist=0.030, poni1=0.050, poni2=0.050,
+                                     detector=cls.detector, wavelength=cls.WAVELENGTH)
+        tth = cls.ai.center_array(cls.SHAPE, unit="2th_rad")
+        mu = sensors.Si_MATERIAL.mu(cls.ENERGY, unit="m^-1")
+        cls.eta = (1 - numpy.exp(-mu * cls.THICKNESS / numpy.cos(tth))).astype("float32")
+        # noise-free image, as the sensor would record it
+        cls.img = (1e5 * cls.ai.solidAngleArray(cls.SHAPE)
+                   * cls.ai.polarization(cls.SHAPE, factor=1.0) * cls.eta).astype("float32")
+        cls.ai.enable_parallax()  # the sensor efficiency comes with the parallax correction
+        cls.kw = {"method": ("no", "csr", "cython"), "correctSolidAngle": True,
+                  "polarization_factor": 1.0, "unit": "2th_deg"}
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.sensor = cls.detector = cls.ai = cls.eta = cls.img = cls.kw = None
+
+    @staticmethod
+    def spread(values):
+        "relative peak-to-peak spread of a profile"
+        values = values[numpy.isfinite(values) & (values > 0)]
+        return (values.max() - values.min()) / values.mean()
+
+    @classmethod
+    def profile2d(cls, res):
+        "azimuthal mean of the radial columns which are fully populated"
+        full = (res.intensity > 0).all(axis=0)
+        return res.intensity[:, full].mean(axis=0)
+
+    def test_builtin_sensor(self):
+        "point 1: built-in detectors know their sensor"
+        det = detectors.Pilatus1M()
+        self.assertIsNotNone(det.sensor, "Pilatus1M.sensor is defined")
+        self.assertEqual(det.sensor.material.name, "Si")
+        self.assertEqual(det.sensor.thickness, 320e-6)
+        self.assertEqual(detectors.Eiger2_4M().sensor, sensors.SensorConfig("Si", 450e-6))
+        self.assertEqual(detectors.PilatusCdTe1M().sensor, sensors.SensorConfig("CdTe", 1000e-6))
+        self.assertIsNone(detectors.Detector(75e-6, 75e-6).sensor, "unknown detector has no sensor")
+        # explicit sensor wins, instances do not share their sensor
+        thick = sensors.SensorConfig("Si", 1000e-6)
+        self.assertEqual(detectors.Pilatus1M(sensor=thick).sensor, thick)
+        self.assertIsNot(detectors.Pilatus1M().sensor, detectors.Pilatus1M().sensor)
+        # configuration saved without sensor (old PONI file) gets the default
+        det = detector_factory("Pilatus1M", {"pixel1": 172e-6, "pixel2": 172e-6})
+        self.assertEqual(det.sensor, sensors.SensorConfig("Si", 320e-6))
+
+    def test_efficiency_array(self):
+        "point 2: with parallax, the integrator computes the per-pixel efficiency, cached and with checksum"
+        eff = self.ai.sensor_efficiency(self.SHAPE)
+        self.assertEqual(eff.shape, self.SHAPE)
+        self.assertTrue(numpy.allclose(eff, self.eta, rtol=1e-3), "matches 1-exp(-mu.t/cos(2theta))")
+        self.assertIs(self.ai.sensor_efficiency(self.SHAPE), eff, "array is cached")
+        arr, crc = self.ai.sensor_efficiency(self.SHAPE, with_checksum=True)
+        self.assertIs(arr, eff)
+        self.assertEqual(crc, crc32(eff), "checksum provided")
+
+    def test_efficiency_needs_parallax(self):
+        "point 2: the efficiency is only available when the parallax is activated"
+        ai = AzimuthalIntegrator(dist=0.030, wavelength=self.WAVELENGTH, detector=self.detector)
+        self.assertIsNone(ai.sensor_efficiency(self.SHAPE), "sensor known but no parallax")
+        ai.enable_parallax()
+        self.assertIsNotNone(ai.sensor_efficiency(self.SHAPE))
+        ai.enable_parallax(False)
+        self.assertIsNone(ai.sensor_efficiency(self.SHAPE), "parallax disabled again")
+
+    def test_integrate1d(self):
+        "point 3: `correct_absorption` is None by default: follows the parallax; can be forced"
+        res = self.ai.integrate1d_ng(self.img, 100, **self.kw)
+        self.assertLess(self.spread(res.intensity), 0.02, "parallax enabled: corrected by default")
+        res = self.ai.integrate1d_ng(self.img, 100, correct_absorption=False, **self.kw)
+        self.assertGreater(self.spread(res.intensity), 0.05, "correction disabled")
+        ai = AzimuthalIntegrator(dist=0.030, poni1=0.050, poni2=0.050,
+                                 detector=self.detector, wavelength=self.WAVELENGTH)
+        res = ai.integrate1d_ng(self.img, 100, **self.kw)
+        self.assertGreater(self.spread(res.intensity), 0.05, "no parallax: not corrected by default")
+
+    def test_medfilt1d(self):
+        "point 3: `medfilt1d_ng` follows the same rule for `correct_absorption`"
+        kw = {k: v for k, v in self.kw.items() if k != "method"}
+        res = self.ai.medfilt1d_ng(self.img, 100, **kw)
+        self.assertLess(self.spread(res.intensity), 0.02, "parallax enabled: corrected by default")
+        res = self.ai.medfilt1d_ng(self.img, 100, correct_absorption=False, **kw)
+        self.assertGreater(self.spread(res.intensity), 0.05, "correction disabled")
+
+    def test_integrate_radial(self):
+        "point 3: `integrate_radial` follows the same rule; I(chi) is flat here, so the level is checked"
+        kw = {"correctSolidAngle": True, "polarization_factor": 1.0, "radial_unit": "2th_deg",
+              "unit": "chi_deg", "method": ("no", "csr", "cython")}
+        res = self.ai.integrate_radial(self.img, 36, 100, **kw)
+        self.assertAlmostEqual(res.intensity.mean() / 1e5, 1.0, delta=0.01, msg="parallax enabled: corrected by default")
+        res = self.ai.integrate_radial(self.img, 36, 100, correct_absorption=False, **kw)
+        self.assertLess(res.intensity.mean() / 1e5, 0.97, "correction disabled")
+        res = self.ai.integrate_radial(self.img, 36, 100, absorption=self.eta, correct_absorption=False, **kw)
+        self.assertAlmostEqual(res.intensity.mean() / 1e5, 1.0, delta=0.01, msg="explicit array")
+
+    def test_multi_geometry(self):
+        "point 3: `MultiGeometry` follows the same rule, and lets `correct_absorption` be forced"
+        ais = []
+        for poni1 in (0.050, 0.052):
+            ai = AzimuthalIntegrator(dist=0.030, poni1=poni1, poni2=0.050,
+                                     detector=self.detector, wavelength=self.WAVELENGTH)
+            ai.enable_parallax()
+            ais.append(ai)
+        mg = MultiGeometry(ais, unit="2th_deg", radial_range=(5, 50), azimuth_range=(-180, 180), threadpoolsize=0)
+        imgs = [self.img, self.img]  # the 2nd geometry is shifted by 2mm, the efficiency stays close
+        res = mg.integrate1d(imgs, 100, polarization_factor=1.0)
+        self.assertLess(self.spread(res.intensity), 0.02, "parallax enabled: corrected by default")
+        res = mg.integrate1d(imgs, 100, polarization_factor=1.0, correct_absorption=False)
+        self.assertGreater(self.spread(res.intensity), 0.05, "correction disabled")
+        res = mg.integrate2d(imgs, 100, 36, polarization_factor=1.0)
+        self.assertLess(self.spread(self.profile2d(res)), 0.02, "2D: corrected by default")
+        res = mg.integrate2d(imgs, 100, 36, polarization_factor=1.0, correct_absorption=False)
+        self.assertGreater(self.spread(self.profile2d(res)), 0.05, "2D: correction disabled")
+
+    def test_worker_config(self):
+        "point 3: `Worker` follows the parallax, and `correct_absorption` is persisted in `WorkerConfig`"
+        worker = Worker(self.ai, shapeIn=self.SHAPE, shapeOut=(1, 100), unit="2th_deg",
+                        method=("no", "csr", "cython"))
+        worker.polarization_factor = 1.0
+        self.assertIsNone(worker.correct_absorption)
+        self.assertLess(self.spread(worker.process(self.img)[:, 1]), 0.02, "parallax enabled: corrected by default")
+        config = worker.get_worker_config()
+        self.assertIsNone(config.correct_absorption)
+
+        def reload(config):
+            "save and reload the configuration, like a JSON file would"
+            with tempfile.TemporaryDirectory() as tmp:
+                filename = os.path.join(tmp, "worker.json")
+                config.save(filename)
+                with open(filename) as fd:
+                    saved = json.load(fd)
+                return saved, WorkerConfig.from_file(filename)
+
+        saved, config = reload(config)
+        self.assertTrue(saved["poni"]["parallax"], "parallax and its sensor are in the poni")
+        new = Worker()
+        new.set_config(config)
+        self.assertIsNotNone(new.ai.parallax, "parallax restored")
+        self.assertLess(self.spread(new.process(self.img)[:, 1]), 0.02, "restored worker corrects")
+
+        worker.correct_absorption = False
+        self.assertGreater(self.spread(worker.process(self.img)[:, 1]), 0.05, "correction disabled")
+        saved, config = reload(worker.get_worker_config())
+        self.assertIs(saved["correct_absorption"], False)
+        new = Worker()
+        new.set_config(config)
+        self.assertIs(new.correct_absorption, False)
+        self.assertGreater(self.spread(new.process(self.img)[:, 1]), 0.05, "disabled correction survives the persistence")
+
+        saved.pop("correct_absorption")  # configuration written before the option existed
+        old = Worker()
+        old.set_config(WorkerConfig.from_dict(saved))
+        self.assertIsNone(old.correct_absorption)
+
+    def test_diffmap_options(self):
+        "point 3: diff_map has --correct-absorption/--no-correct-absorption, stored in the configuration"
+        for flag, expected in (([], None), (["--correct-absorption"], True), (["--no-correct-absorption"], False)):
+            options, config = DiffMap().parse(flag, with_config=True)
+            self.assertIs(options.correct_absorption, expected, flag)
+            self.assertIs(config.ai.correct_absorption, expected, flag)
+
+    def test_fiber(self):
+        "point 3: fiber integration (same preprocessing): default follows the parallax, can be forced, explicit array"
+        fi = FiberIntegrator(dist=0.030, poni1=0.050, poni2=0.050,
+                             detector=self.detector, wavelength=self.WAVELENGTH)
+        fi.enable_parallax()
+        kw = {"npt_ip": 60, "npt_oop": 60, "method": ("no", "histogram", "cython"),
+              "correctSolidAngle": True, "polarization_factor": 1.0}
+
+        def flat(result):
+            intensity = result.intensity
+            return self.spread(intensity[numpy.isfinite(intensity)])
+
+        self.assertLess(flat(fi.integrate2d_fiber(self.img, **kw)), 0.02, "2D: corrected by default")
+        self.assertLess(flat(fi.integrate2d_fiber(self.img, correct_absorption=True, **kw)), 0.02, "2D: forced")
+        self.assertGreater(flat(fi.integrate2d_fiber(self.img, correct_absorption=False, **kw)), 0.05, "2D: disabled")
+        res = fi.integrate2d_fiber(self.img, absorption=self.eta, correct_absorption=False, **kw)
+        self.assertLess(flat(res), 0.02, "2D: explicit array")
+        kw1d = {"vertical_integration": True, **kw}
+        self.assertLess(flat(fi.integrate_fiber(self.img, **kw1d)), 0.02, "1D: corrected by default")
+        self.assertGreater(flat(fi.integrate_fiber(self.img, correct_absorption=False, **kw1d)), 0.05, "1D: disabled")
+        # without parallax: no correction by default
+        fi.enable_parallax(False)
+        self.assertGreater(flat(fi.integrate2d_fiber(self.img, **kw)), 0.05, "no parallax")
+
+    def test_multi_geometry_fiber(self):
+        "point 3: `MultiGeometryFiber` follows the same rule"
+        fis = []
+        imgs = []
+        for poni1 in (0.050, 0.052):
+            fi = FiberIntegrator(dist=0.030, poni1=poni1, poni2=0.050,
+                                 detector=self.detector, wavelength=self.WAVELENGTH)
+            fi.enable_parallax()
+            fis.append(fi)
+            # each image is simulated with the efficiency of its own geometry
+            imgs.append((1e5 * fi.solidAngleArray(self.SHAPE) * fi.polarization(self.SHAPE, factor=1.0)
+                         * fi.sensor_efficiency(self.SHAPE)).astype("float32"))
+        mg = MultiGeometryFiber(fis, unit=("qip_nm^-1", "qoop_nm^-1"), threadpoolsize=0)
+        kw = {"npt_ip": 60, "npt_oop": 60, "polarization_factor": 1.0}
+
+        def flat(result):
+            intensity = result.intensity
+            return self.spread(intensity[numpy.isfinite(intensity)])
+
+        self.assertLess(flat(mg.integrate2d_fiber(imgs, **kw)), 0.02, "corrected by default")
+        self.assertGreater(flat(mg.integrate2d_fiber(imgs, correct_absorption=False, **kw)), 0.05, "disabled")
+
+    def test_worker_fiber_config(self):
+        "point 3: `WorkerFiber` follows the parallax, and `correct_absorption` is persisted in `WorkerFiberConfig`"
+        fi = FiberIntegrator(dist=0.030, poni1=0.050, poni2=0.050,
+                             detector=self.detector, wavelength=self.WAVELENGTH)
+        fi.enable_parallax()
+        worker = WorkerFiber(fi, shapeIn=self.SHAPE, npt_oop=60, npt_ip=60, method=("no", "histogram", "cython"))
+        worker.polarization_factor = 1.0
+
+        def flat(worker):
+            intensity = worker.process(self.img)
+            return self.spread(intensity[numpy.isfinite(intensity)])
+
+        self.assertIsNone(worker.correct_absorption)
+        self.assertLess(flat(worker), 0.02, "parallax enabled: corrected by default")
+        worker.correct_absorption = False
+        self.assertGreater(flat(worker), 0.05, "correction disabled")
+        with tempfile.TemporaryDirectory() as tmp:
+            filename = os.path.join(tmp, "worker_fiber.json")
+            worker.get_worker_config().save(filename)
+            with open(filename) as fd:
+                self.assertIs(json.load(fd)["correct_absorption"], False)
+            config = WorkerFiberConfig.from_file(filename)
+        new = WorkerFiber()
+        new.set_config(config)
+        self.assertIs(new.correct_absorption, False)
+        self.assertGreater(flat(new), 0.05, "disabled correction survives the persistence")
+        new.correct_absorption = None
+        self.assertLess(flat(new), 0.02, "automatic: parallax restored from the poni")
+
+    def test_sigma_clip(self):
+        "point 3: `sigma_clip` follows the same rule for `correct_absorption`"
+        # sigma_clip needs an error model to get a meaningful result
+        res = self.ai.sigma_clip(self.img, 100, error_model="poisson", **self.kw)
+        self.assertLess(self.spread(res.intensity), 0.02, "parallax enabled: corrected by default")
+        res = self.ai.sigma_clip(self.img, 100, error_model="poisson", correct_absorption=False, **self.kw)
+        self.assertGreater(self.spread(res.intensity), 0.05, "correction disabled")
+
+    def test_sigma_clip_without_variance(self):
+        "sigma_clip needs the variance: without it, falls back on a poissonian model and warns loudly"
+        with self.assertLogs(level="WARNING") as logs:
+            res = self.ai.sigma_clip(self.img, 100, **self.kw)
+        self.assertIn("POISSONIAN", "\n".join(logs.output))
+        ref = self.ai.sigma_clip(self.img, 100, error_model="poisson", **self.kw)
+        self.assertTrue(numpy.allclose(res.intensity, ref.intensity), "same as the explicit poissonian model")
+        self.assertLess(self.spread(res.intensity), 0.02)
+
+    def test_injected_efficiency(self):
+        "point 3: without parallax, the efficiency can be injected (and cached) and used with correct_absorption=True"
+        ai = AzimuthalIntegrator(dist=0.030, poni1=0.050, poni2=0.050,
+                                 detector=detectors.Detector(500e-6, 500e-6, max_shape=self.SHAPE),
+                                 wavelength=self.WAVELENGTH)
+        self.assertIsNone(ai.sensor_efficiency(self.SHAPE))
+        ai.set_sensor_efficiency(self.eta)
+        self.assertTrue(numpy.array_equal(ai.sensor_efficiency(self.SHAPE), self.eta))
+        eff, crc = ai.sensor_efficiency(self.SHAPE, with_checksum=True)
+        self.assertEqual(crc, crc32(eff))
+        self.assertIs(ai.__copy__().sensor_efficiency(self.SHAPE), eff, "copied with the geometry")
+        res = ai.integrate1d_ng(self.img, 100, **self.kw)
+        self.assertGreater(self.spread(res.intensity), 0.05, "no parallax: not corrected by default")
+        res = ai.integrate1d_ng(self.img, 100, correct_absorption=True, **self.kw)
+        self.assertLess(self.spread(res.intensity), 0.02, "forced correction with the injected array")
+        with self.assertRaises(RuntimeError):
+            ai.sensor_efficiency((10, 10))
+        ai.set_sensor_efficiency(None)
+        self.assertIsNone(ai.sensor_efficiency(self.SHAPE))
+
+    def test_efficiency_dropped_on_reset(self):
+        "point 2: the efficiency is cached, so it is dropped when the geometry changes (better absent than wrong)"
+        ai = AzimuthalIntegrator(dist=0.030, poni1=0.050, poni2=0.050,
+                                 detector=self.detector, wavelength=self.WAVELENGTH)
+        ai.set_sensor_efficiency(self.eta)
+        self.assertIsNotNone(ai.sensor_efficiency(self.SHAPE))
+        ai.dist = 0.05
+        self.assertIsNone(ai.sensor_efficiency(self.SHAPE), "injected array dropped with the geometry")
+        ai.enable_parallax()
+        eff = ai.sensor_efficiency(self.SHAPE)
+        ai.dist = 0.03
+        self.assertIsNot(ai.sensor_efficiency(self.SHAPE), eff, "calculated array regenerated")
+        ai.set_sensor_efficiency(self.eta)
+        self.assertIs(ai.sensor_efficiency(self.SHAPE), ai.sensor_efficiency(self.SHAPE))
+        self.assertTrue(numpy.array_equal(ai.sensor_efficiency(self.SHAPE), self.eta), "injected wins over parallax")
+
+    def test_warning_without_parallax(self):
+        "point 3: warn when the correction is requested but the efficiency is unknown"
+        ai = AzimuthalIntegrator(dist=0.030, wavelength=self.WAVELENGTH, detector=self.detector)
+        with self.assertLogs(level="WARNING"):
+            ai.integrate1d_ng(self.img, 100, correct_absorption=True, **self.kw)
+
+    def test_integrate2d(self):
+        "point 4: integrate2d_ng accepts `absorption` and `correct_absorption`"
+        res = self.ai.integrate2d_ng(self.img, 100, 36, absorption=self.eta, **self.kw)
+        self.assertLess(self.spread(self.profile2d(res)), 0.02, "absorption=")
+        res = self.ai.integrate2d_ng(self.img, 100, 36, **self.kw)
+        self.assertLess(self.spread(self.profile2d(res)), 0.02, "parallax enabled: corrected by default")
+        res = self.ai.integrate2d_ng(self.img, 100, 36, correct_absorption=False, **self.kw)
+        self.assertGreater(self.spread(self.profile2d(res)), 0.05, "correction disabled")
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
@@ -949,6 +1271,7 @@ def suite():
     testsuite.addTest(loader(TestBug211))
     testsuite.addTest(loader(TestBugRegression))
     testsuite.addTest(loader(TestBug1703))
+    testsuite.addTest(loader(TestBug2953))
     return testsuite
 
 

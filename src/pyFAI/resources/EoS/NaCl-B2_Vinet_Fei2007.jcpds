@@ -1,0 +1,27 @@
+VERSION:   4
+COMMENT: NaCl-B2 (CsCl-type), Pm-3m - Fei et al. (2007) PNAS 104, 9182-9186, doi:10.1073/pnas.0609013104, table 1
+COMMENT: Vinet fit at 300 K, see NaCl-B2_BM3_Fei2007.jcpds for the 3rd order Birch-Murnaghan fit
+COMMENT: WARNING: the EOS keyword is a pyFAI extension, other programs read K0/K0P as Birch-Murnaghan
+COMMENT: Thermal model of the source: Mie-Gruneisen-Debye, theta0=290 K, gamma0=1.70, q=0.5
+COMMENT: ALPHAT, DALPHADT, DK0DT, DK0PDT fitted on this model (thermal pressure, as in Dioptas) between 298 and 1000 K, from 0 GPa down to V/V0=0.8: pressure within 0.02 GPa, temperature within 1.2 K at 0 GPa
+COMMENT: Intensities calculated (Cu Ka, Cromer-Mann form factors, no thermal factor)
+K0:        26.860
+K0P:       5.250
+EOS:       VINET
+SYMMETRY:  CUBIC
+A:         3.45800
+VOLUME:    41.3500
+DK0DT:     1.5424e-03
+DK0PDT:    -2.5011e-04
+ALPHAT:    1.2305e-04
+DALPHADT:  -4.1849e-09
+DIHKL:       3.4580     5.8   1   0   0
+DIHKL:       2.4452   100.0   1   1   0
+DIHKL:       1.9965     0.9   1   1   1
+DIHKL:       1.7290    15.4   2   0   0
+DIHKL:       1.5465     1.1   2   1   0
+DIHKL:       1.4117    29.0   2   1   1
+DIHKL:       1.2226     8.6   2   2   0
+DIHKL:       1.1527     0.7   2   2   1
+DIHKL:       1.1527     0.2   3   0   0
+DIHKL:       1.0935    12.4   3   1   0

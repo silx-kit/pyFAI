@@ -1,0 +1,28 @@
+VERSION:   4
+COMMENT: Rhenium (Re), P6_3/mmc - Anzellini et al. (2014) J. Appl. Phys. 115, 043511, doi:10.1063/1.4863300, table IV
+COMMENT: Vinet fit at room temperature, quasi-hydrostatic (He) compression up to 144 GPa: V0=8.8726(100) cm3/mol, K0=352.6(80) GPa, K0P=4.56(17)
+COMMENT: WARNING: the EOS keyword is a pyFAI extension, other programs read K0/K0P as Birch-Murnaghan
+COMMENT: c/a=1.61447 extrapolated at 0 GPa from table III (constant up to 10 GPa), a and c from V0; c/a decreases to 1.611 at 144 GPa, not described by the EoS
+COMMENT: No thermal model in the source
+COMMENT: Intensities calculated (Cu Ka, Cromer-Mann form factor of Pt used for Re, no thermal factor)
+K0:        352.600
+K0P:       4.560
+EOS:       VINET
+SYMMETRY:  HEXAGONAL
+A:         2.76221
+C:         4.45950
+VOLUME:    29.4666
+DIHKL:       2.3921    24.0   1   0   0
+DIHKL:       2.2298    26.2   0   0   2
+DIHKL:       2.1080   100.0   1   0   1
+DIHKL:       1.6311    15.1   1   0   2
+DIHKL:       1.3811    17.6   1   1   0
+DIHKL:       1.2626    19.8   1   0   3
+DIHKL:       1.1961     2.8   2   0   0
+DIHKL:       1.1741    21.4   1   1   2
+DIHKL:       1.1552    15.4   2   0   1
+DIHKL:       1.1149     3.1   0   0   4
+DIHKL:       1.0540     4.2   2   0   2
+DIHKL:       1.0105     4.0   1   0   4
+DIHKL:       0.9319    11.8   2   0   3
+DIHKL:       0.9041     4.1   2   1   0
