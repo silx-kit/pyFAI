@@ -32,15 +32,18 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "05/06/2026"
+__date__ = "18/11/2026"
 
 import logging
 import math
 import os
 import unittest
 
+import fabio
 import numpy
 
+from .. import detectors, geometry
+from ..calibrant import CALIBRANT_FACTORY
 from ..goniometer import (
     ExtendedTransformation,
     GeometryTranslation,
@@ -50,6 +53,7 @@ from ..goniometer import (
     SingleGeometry,
     numexpr,
 )
+from ..integrator.azimuthal import AzimuthalIntegrator
 from .utilstest import UtilsTest
 
 logger = logging.getLogger(__name__)
@@ -222,10 +226,85 @@ class TestTranslation(unittest.TestCase):
           gonio.extract_cp()
 
 
+class TestExtractControlPoints(unittest.TestCase):
+    """Quality of the control points extracted by `SingleGeometry.extract_cp`
+
+    Reference values measured on the implementation of 2026.11 (20 runs, the extraction is
+    randomized): they guard the quality of the result when `extract_cp` is optimized (#2999).
+    """
+
+    def test_extract_cp_pilatus1m(self):
+        """Extraction on the first 5 rings of AgBh (the following one is not visible), then refinement"""
+        with fabio.open(UtilsTest.getimage("Pilatus1M.edf")) as fimg:
+            frame = fimg.data
+        wl = 1e-10
+        pilatus = detectors.detector_factory("Pilatus1M")
+        behenate = CALIBRANT_FACTORY("AgBh")
+        behenate.wavelength = wl
+        initial = geometry.Geometry(detector=pilatus, wavelength=wl)
+        initial.setFit2D(1600, 200, 300)  # distance in mm, beam center in pixels
+        sg = SingleGeometry("pilatus1m", frame, calibrant=behenate, detector=pilatus, geometry=initial)
+        cp = sg.extract_cp(max_rings=5)
+        points = numpy.array(cp.getList())
+
+        self.assertEqual(sorted(set(points[:, 2].astype(int))), [0, 1, 2, 3, 4], "5 rings extracted")
+        # measured: 736 to 741 points
+        self.assertTrue(725 <= len(points) <= 755, f"Number of control points: {len(points)}")
+
+        # Rotations and wavelength are kept fixed: good practice for such a refinement
+        sg.geometry_refinement.refine2(fix=["rot1", "rot2", "rot3", "wavelength"])
+        # measured: chi2 between 1.1e-6 and 1.6e-6
+        chi2 = sg.geometry_refinement.chi2()
+        self.assertLess(chi2, 3e-6, f"chi2 after refinement: {chi2}")
+        ai = sg.get_ai()
+        for name, ref in (("dist", 1.63463), ("poni1", 0.0454399), ("poni2", 0.0309507)):
+            self.assertAlmostEqual(getattr(ai, name), ref, delta=1e-3 * ref, msg=f"{name} after refinement")
+
+    def test_extract_cp_synthetic(self):
+        """Extraction on a noise-free simulated image (Pilatus300k): the exact geometry is known.
+        No rotation, so that a refinement with fixed rotations can find it back."""
+        wl = 1e-10
+        pilatus = detectors.detector_factory("Pilatus300k")
+        behenate = CALIBRANT_FACTORY("AgBh")
+        behenate.wavelength = wl
+        truth = AzimuthalIntegrator(dist=0.25,
+                                    poni1=pilatus.shape[0] * pilatus.pixel1 * 0.4,
+                                    poni2=pilatus.shape[1] * pilatus.pixel2 * 0.4,
+                                    detector=pilatus, wavelength=wl)
+        image = behenate.fake_calibration_image(truth)
+
+        # Wrong guess: 2% on the distance, a few pixels on the beam center
+        fit2d = truth.getFit2D()
+        initial = geometry.Geometry(detector=pilatus, wavelength=wl)
+        initial.setFit2D(truth.dist * 1000 * 1.02, fit2d["centerX"] + 4, fit2d["centerY"] - 3)
+        sg = SingleGeometry("synthetic", image, calibrant=behenate, detector=pilatus, geometry=initial)
+        cp = sg.extract_cp(max_rings=5)
+        points = numpy.array(cp.getList())
+
+        self.assertEqual(sorted(set(points[:, 2].astype(int))), [0, 1, 2, 3, 4], "5 rings extracted")
+        # measured: 431 or 432 points
+        self.assertTrue(400 <= len(points) <= 460, f"Number of control points: {len(points)}")
+        # Every point lies on its ring of the exact geometry; measured: 0.13 mrad (a pixel is about 0.7 mrad)
+        tth_rings = numpy.array([i for i in behenate.get_2th() if i is not None])
+        error = numpy.abs(truth.tth(points[:, 0], points[:, 1]) - tth_rings[points[:, 2].astype(int)]).max()
+        self.assertLess(error, 0.25e-3, f"Control points are off their ring by {error * 1e3:.3f} mrad")
+
+        sg.geometry_refinement.refine2(fix=["rot1", "rot2", "rot3", "wavelength"])
+        # measured: chi2 = 8.3e-8
+        chi2 = sg.geometry_refinement.chi2()
+        self.assertLess(chi2, 3e-7, f"chi2 after refinement: {chi2}")
+        ai = sg.get_ai()
+        # measured: 2e-5 m on the distance, 3e-7 m on the PONI
+        self.assertAlmostEqual(ai.dist, truth.dist, delta=1e-3 * truth.dist, msg="dist after refinement")
+        self.assertAlmostEqual(ai.poni1, truth.poni1, delta=2e-6, msg="poni1 after refinement")
+        self.assertAlmostEqual(ai.poni2, truth.poni2, delta=2e-6, msg="poni2 after refinement")
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestTranslation))
+    testsuite.addTest(loader(TestExtractControlPoints))
     return testsuite
 
 
