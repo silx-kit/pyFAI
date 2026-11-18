@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 04/10/2026
+:Date: 04/11/2026
 :Keywords: changelog
 
 Change-log of versions
@@ -13,10 +13,18 @@ Change-log of versions
   * `MultiModule.display()` draws the modules of a detector and the displacement of the corners highlighted (#2956)
   * Median filtering on GPU is 3x faster: the comb sort now spreads over the whole workgroup and sorts (key, index) pairs, in local memory when the bin fits.
   * `Integrate2dResult.rebin1d()` gains `radial_range` and `azimuth_range`, to extract the pattern of an azimuthal sector out of a single 2D integration (#2961)
+  * Equations of state of calibrants, in `pyFAI.crystallography.eos`: the d-spacings can be recalculated at the pressure and temperature
+    of the experiment, and a calibrant can be used as pressure gauge or as thermometer (#2371).
+    Models: Vinet, Birch-Murnaghan, Murnaghan, thermal expansion, P-V-T composite, thermal pressure (JCPDS/Dioptas) and (expanded) Mie-Grüneisen-Debye (Dorogokupets & Dewaele, 2007).
+  * Read and write JCPDS (version 4) files, with the equation of state interpreted as in Dioptas, and a set of cards for Au, Pt, Rh, Re, W, Ta, Cu, Al, Fe, Al2O3, NaCl, Ne, Kr and Xe taken from the literature.
 
 - Bug fixes:
 
+  * Fix the calibrant files read or written under Windows (#2988, #2990)
+
 - Documentation:
+
+  * New tutorial: temperature from the lattice parameter of gold, with its equation of state.
 
 - Code quality:
 

@@ -32,16 +32,23 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/09/2026"
+__date__ = "04/11/2026"
 
+import json
 import logging
+import os
 import unittest
+import unittest.mock
 from typing import ClassVar
-
 import numpy
-
+import scipy.constants
 from ..crystallography import Cell, ReflectionCondition, resolution
 from .utilstest import UtilsTest
+from ..crystallography import EquationOfState
+from ..crystallography.eos import (BirchMurnaghan, LatticeExpansion, MieGruneisenDebye, Murnaghan, PVT,
+                                   ThermalExpansion, ThermalPressure, Vinet, VolumeExpansion)
+from ..io.calibrant_config import CalibrantConfig, JCPDS_T_REF
+from ..containers import Miller, Reflection
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +99,903 @@ class TestCrystallography(unittest.TestCase):
         res2 = len(phase2.calculate_dspacing(dmin=1))
         self.assertEqual(res1, res2)
         self.assertGreater(res0, res2)
+
+
+class _MurnaghanForTest(EquationOfState):
+    """Minimalistic concrete model used to exercise the abstract class:
+    V(P) = V0 * (1 + k0p*(P-P0)/k0)^(-1/k0p), analytically invertible."""
+
+    name = "murnaghan-for-test"
+
+    def __init__(self, k0, k0p, v0=None, t0=298.15, p0=0.0):
+        super().__init__(v0=v0, t0=t0, p0=p0)
+        self.k0 = float(k0)
+        self.k0p = float(k0p)
+
+    def volume_ratio(self, pressure=None, temperature=None):
+        pressure, _temperature = self._reference_conditions(pressure, temperature)
+        return (1.0 + self.k0p * (pressure - self.p0) / self.k0) ** (-1.0 / self.k0p)
+
+
+class TestEquationOfState(unittest.TestCase):
+
+    def test_abstract(self):
+        self.assertRaises(TypeError, EquationOfState)
+
+    def test_factory(self):
+        self.assertIn("murnaghan-for-test", EquationOfState.names())
+        eos = EquationOfState.factory("Murnaghan_For Test", k0=160.0, k0p=4.0)
+        self.assertIsInstance(eos, _MurnaghanForTest)
+        self.assertRaises(KeyError, EquationOfState.factory, "not-a-model")
+
+    def test_reference_conditions(self):
+        eos = _MurnaghanForTest(k0=160.0, k0p=4.0)
+        self.assertAlmostEqual(eos.volume_ratio(), 1.0, places=12)
+        self.assertAlmostEqual(eos.linear_ratio(), 1.0, places=12)
+        self.assertAlmostEqual(eos.pressure(ratio=1.0), eos.p0, places=8)
+
+    def test_pressure_inversion(self):
+        "The generic numerical inversion matches the analytical Murnaghan inverse"
+        eos = _MurnaghanForTest(k0=160.0, k0p=4.0)
+        for p_ref in (0.5, 10.0, 100.0):
+            ratio = eos.volume_ratio(pressure=p_ref)
+            self.assertLess(ratio, 1.0)
+            self.assertAlmostEqual(eos.pressure(ratio=ratio), p_ref, places=6)
+        # dilatation: V > V0 corresponds to a negative pressure
+        self.assertLess(eos.pressure(ratio=1.01), 0.0)
+
+    def test_linear_ratio(self):
+        eos = _MurnaghanForTest(k0=160.0, k0p=4.0)
+        self.assertAlmostEqual(eos.linear_ratio(pressure=10.0),
+                               eos.volume_ratio(pressure=10.0) ** (1.0 / 3.0),
+                               places=12)
+
+    def test_volume(self):
+        eos = _MurnaghanForTest(k0=160.0, k0p=4.0, v0=100.0)
+        self.assertAlmostEqual(eos.volume(), 100.0, places=10)
+        self.assertAlmostEqual(eos.pressure(volume=eos.volume(pressure=5.0)), 5.0, places=6)
+        bare = _MurnaghanForTest(k0=160.0, k0p=4.0)
+        self.assertRaises(ValueError, bare.volume)
+        self.assertRaises(ValueError, bare.pressure, 90.0)
+
+    def test_temperature_isothermal(self):
+        "An isothermal model cannot be used as a thermometer"
+        eos = _MurnaghanForTest(k0=160.0, k0p=4.0)
+        self.assertRaises(ValueError, eos.temperature, None, None, 0.99)
+
+    def test_serialization(self):
+        eos = _MurnaghanForTest(k0=160.0, k0p=4.0, v0=100.0)
+        dico = eos.as_dict()
+        self.assertEqual(dico["model"], "murnaghan-for-test")
+        clone = EquationOfState.from_dict(dico)
+        self.assertEqual(eos, clone)
+        self.assertIsInstance(repr(eos), str)
+
+
+class TestVinet(unittest.TestCase):
+    """Vinet EoS with parameters of gold: K0=167 GPa, K0'=6.0
+    (Heinz & Jeanloz, J. Appl. Phys. 55 (1984), a0=4.0786A)"""
+
+    def setUp(self):
+        self.eos = Vinet(k0=167.0, k0p=6.0, v0=4.0786 ** 3)
+
+    def test_factory(self):
+        self.assertIn("Vinet", EquationOfState.names())
+        clone = EquationOfState.factory("vinet", k0=167.0, k0p=6.0, v0=4.0786 ** 3)
+        self.assertEqual(self.eos, clone)
+        self.assertEqual(self.eos, EquationOfState.from_dict(self.eos.as_dict()))
+
+    def test_reference_conditions(self):
+        self.assertAlmostEqual(self.eos.volume_ratio(), 1.0, places=12)
+        self.assertAlmostEqual(self.eos.pressure(ratio=1.0), 0.0, places=10)
+
+    def test_linear_limit(self):
+        "At low pressure the compression is linear: V/V0 = 1 - P/K0"
+        p = 1e-3 * self.eos.k0
+        self.assertAlmostEqual(self.eos.volume_ratio(pressure=p), 1.0 - 1e-3, places=5)
+
+    def test_roundtrip(self):
+        "P -> V/V0 -> P is the identity, including under extreme compression"
+        for p_ref in (0.1, 5.0, 50.0, 300.0):
+            ratio = self.eos.volume_ratio(pressure=p_ref)
+            self.assertLess(ratio, 1.0)
+            self.assertAlmostEqual(self.eos.pressure(ratio=ratio), p_ref, places=6)
+
+    def test_monotonic(self):
+        pressures = [0.0, 1.0, 10.0, 100.0, 1000.0]
+        ratios = [self.eos.volume_ratio(pressure=p) for p in pressures]
+        self.assertEqual(ratios, sorted(ratios, reverse=True))
+
+    def test_tension(self):
+        "Moderate tension expands the cell, beyond the spinodal there is no solution"
+        self.assertGreater(self.eos.volume_ratio(pressure=-5.0), 1.0)
+        self.assertAlmostEqual(self.eos.pressure(ratio=self.eos.volume_ratio(pressure=-5.0)),
+                               -5.0, places=6)
+        self.assertRaises(ValueError, self.eos.volume_ratio, -self.eos.k0)
+
+    def test_gauge(self):
+        "Pressure gauge mode: measured lattice parameter of gold -> pressure"
+        a = 3.9500  # Angstrom
+        p = self.eos.pressure(volume=a ** 3)
+        self.assertGreater(p, 0.0)
+        # consistency: back to the lattice parameter
+        self.assertAlmostEqual(self.eos.linear_ratio(pressure=p) * 4.0786, a, places=6)
+
+
+class TestBirchMurnaghan(unittest.TestCase):
+    """Birch-Murnaghan 3rd order with parameters of gold (K0=167 GPa, K0'=5.5)"""
+
+    def setUp(self):
+        self.eos = BirchMurnaghan(k0=167.0, k0p=5.5, v0=4.0786 ** 3)
+
+    def test_factory(self):
+        self.assertIn("Birch-Murnaghan", EquationOfState.names())
+        clone = EquationOfState.factory("birch_murnaghan", k0=167.0, k0p=5.5, v0=4.0786 ** 3)
+        self.assertEqual(self.eos, clone)
+        self.assertEqual(self.eos, EquationOfState.from_dict(self.eos.as_dict()))
+
+    def test_reference_conditions(self):
+        self.assertAlmostEqual(self.eos.volume_ratio(), 1.0, places=12)
+        self.assertAlmostEqual(self.eos.pressure(ratio=1.0), 0.0, places=10)
+
+    def test_second_order(self):
+        "With K0'=4 the model reduces to 2nd order: P = 3/2 K0 (eta^7 - eta^5)"
+        eos = BirchMurnaghan(k0=160.0)
+        self.assertEqual(eos.k0p, 4.0)
+        eta = 0.95 ** (-1.0 / 3.0)
+        self.assertAlmostEqual(eos.pressure(ratio=0.95),
+                               1.5 * 160.0 * (eta ** 7 - eta ** 5),
+                               places=10)
+
+    def test_linear_limit(self):
+        "At low pressure the compression is linear: V/V0 = 1 - P/K0"
+        p = 1e-3 * self.eos.k0
+        self.assertAlmostEqual(self.eos.volume_ratio(pressure=p), 1.0 - 1e-3, places=5)
+
+    def test_matches_vinet_at_low_pressure(self):
+        "BM3 and Vinet agree to first order for moderate compressions"
+        vinet = Vinet(k0=167.0, k0p=5.5)
+        for p in (0.5, 2.0, 5.0):
+            self.assertAlmostEqual(self.eos.volume_ratio(pressure=p),
+                                   vinet.volume_ratio(pressure=p),
+                                   places=4)
+
+    def test_roundtrip(self):
+        "P -> V/V0 -> P is the identity, including under extreme compression"
+        for p_ref in (0.1, 5.0, 50.0, 300.0):
+            ratio = self.eos.volume_ratio(pressure=p_ref)
+            self.assertLess(ratio, 1.0)
+            self.assertAlmostEqual(self.eos.pressure(ratio=ratio), p_ref, places=6)
+
+    def test_monotonic(self):
+        pressures = [0.0, 1.0, 10.0, 100.0, 1000.0]
+        ratios = [self.eos.volume_ratio(pressure=p) for p in pressures]
+        self.assertEqual(ratios, sorted(ratios, reverse=True))
+
+    def test_tension(self):
+        "Moderate tension expands the cell, beyond the spinodal there is no solution"
+        ratio = self.eos.volume_ratio(pressure=-5.0)
+        self.assertGreater(ratio, 1.0)
+        self.assertAlmostEqual(self.eos.pressure(ratio=ratio), -5.0, places=6)
+        self.assertRaises(ValueError, self.eos.volume_ratio, -self.eos.k0)
+
+    def test_truncation_turnover(self):
+        "With K0' < 4 the truncated model turns over under extreme compression"
+        soft = BirchMurnaghan(k0=167.0, k0p=3.0)
+        self.assertAlmostEqual(soft.pressure(ratio=soft.volume_ratio(pressure=50.0)),
+                               50.0, places=6)
+        self.assertRaises(ValueError, soft.volume_ratio, 3.0 * soft.k0)
+
+
+class TestThermalExpansion(unittest.TestCase):
+    """Fei-type thermal expansion with MgO-like parameters"""
+
+    def setUp(self):
+        self.eos = ThermalExpansion(alpha0=3.0e-5, alpha1=1.2e-8, alpha2=-0.5)
+
+    def test_factory(self):
+        self.assertIn("thermal-expansion", EquationOfState.names())
+        clone = EquationOfState.factory("Thermal Expansion",
+                                        alpha0=3.0e-5, alpha1=1.2e-8, alpha2=-0.5)
+        self.assertEqual(self.eos, clone)
+        self.assertEqual(self.eos, EquationOfState.from_dict(self.eos.as_dict()))
+
+    def test_alpha(self):
+        t = 400.0
+        self.assertAlmostEqual(self.eos.alpha(t),
+                               3.0e-5 + 1.2e-8 * t - 0.5 / t ** 2,
+                               places=12)
+
+    def test_constant_coefficient(self):
+        "With a constant coefficient the ratio is exactly exp(alpha0 * (T-T0))"
+        eos = ThermalExpansion(alpha0=3.5e-5)
+        self.assertAlmostEqual(eos.volume_ratio(temperature=eos.t0 + 100.0),
+                               numpy.exp(3.5e-3), places=12)
+        self.assertAlmostEqual(eos.volume_ratio(), 1.0, places=12)
+
+    def test_against_numerical_integration(self):
+        "The analytical integral of alpha_V matches scipy.integrate.quad"
+        from scipy.integrate import quad
+        for t in (100.0, 500.0, 1500.0):
+            expected = quad(self.eos.alpha, self.eos.t0, t)[0]
+            self.assertAlmostEqual(numpy.log(self.eos.volume_ratio(temperature=t)),
+                                   expected, places=10)
+
+    def test_expansion_and_contraction(self):
+        self.assertGreater(self.eos.volume_ratio(temperature=500.0), 1.0)
+        self.assertLess(self.eos.volume_ratio(temperature=100.0), 1.0)
+
+    def test_thermometer(self):
+        """Temperature inversion: V/V0 -> T is the inverse of T -> V/V0.
+        Only within the validity domain of the Fei model: alpha_V changes
+        sign at sqrt(-alpha2/alpha0) ~ 129 K, below which V(T) is not monotonic."""
+        for t_ref in (200.0, 350.0, 1500.0):
+            ratio = self.eos.volume_ratio(temperature=t_ref)
+            self.assertAlmostEqual(self.eos.temperature(ratio=ratio), t_ref, places=6)
+
+    def test_thermometer_ambiguous(self):
+        """Below ~129 K two temperatures share the same volume:
+        the solution closest to the reference temperature is returned"""
+        ratio = self.eos.volume_ratio(temperature=100.0)
+        t = self.eos.temperature(ratio=ratio)
+        self.assertAlmostEqual(self.eos.volume_ratio(temperature=t), ratio, places=10)
+        self.assertGreater(t, 129.0)
+
+    def test_thermometer_unreachable(self):
+        "A volume smaller than the minimum of V(T) matches no temperature"
+        self.assertRaises(ValueError, self.eos.temperature, None, None, 0.9)
+
+    def test_isobaric(self):
+        "The volume does not depend on pressure: no pressure can be inverted"
+        self.assertRaises(ValueError, self.eos.pressure, None, None, 0.99)
+
+
+class TestLatticeExpansion(unittest.TestCase):
+    """Polynomial expansion of the lattice parameter, silicon-like"""
+
+    def setUp(self):
+        self.eos = LatticeExpansion(coefficients=[2.581e-6, 1.0e-9])
+
+    def test_factory(self):
+        self.assertIn("lattice-expansion", EquationOfState.names())
+        clone = EquationOfState.factory("LatticeExpansion", coefficients=[2.581e-6, 1.0e-9])
+        self.assertEqual(self.eos, clone)
+        self.assertEqual(self.eos, EquationOfState.from_dict(self.eos.as_dict()))
+
+    def test_polynomial(self):
+        self.assertAlmostEqual(self.eos.linear_ratio(), 1.0, places=12)
+        dt = 100.0
+        self.assertAlmostEqual(self.eos.linear_ratio(temperature=self.eos.t0 + dt),
+                               1.0 + 2.581e-6 * dt + 1.0e-9 * dt * dt,
+                               places=12)
+
+    def test_volume_is_cube(self):
+        t = 500.0
+        self.assertAlmostEqual(self.eos.volume_ratio(temperature=t),
+                               self.eos.linear_ratio(temperature=t) ** 3,
+                               places=12)
+
+    def test_thermometer(self):
+        for t_ref in (100.0, 350.0, 900.0):
+            ratio = self.eos.volume_ratio(temperature=t_ref)
+            self.assertAlmostEqual(self.eos.temperature(ratio=ratio), t_ref, places=6)
+
+    def test_dspacing_scaling(self):
+        "d-spacings of a cubic calibrant scale by the linear ratio"
+        d0 = 3.13541554  # Si (111) at room temperature
+        d = d0 * self.eos.linear_ratio(temperature=473.15)
+        self.assertGreater(d, d0)
+        self.assertLess((d - d0) / d0, 1e-3)
+
+
+class TestMurnaghan(unittest.TestCase):
+    """Murnaghan EoS, fully analytical in both directions"""
+
+    def setUp(self):
+        self.eos = Murnaghan(k0=167.0, k0p=5.5, v0=4.0786 ** 3)
+
+    def test_factory(self):
+        self.assertIn("Murnaghan", EquationOfState.names())
+        clone = EquationOfState.factory("murnaghan", k0=167.0, k0p=5.5, v0=4.0786 ** 3)
+        self.assertEqual(self.eos, clone)
+        self.assertEqual(self.eos, EquationOfState.from_dict(self.eos.as_dict()))
+
+    def test_reference_conditions(self):
+        self.assertAlmostEqual(self.eos.volume_ratio(), 1.0, places=12)
+        self.assertAlmostEqual(self.eos.pressure(ratio=1.0), 0.0, places=12)
+
+    def test_roundtrip(self):
+        "Both directions are analytical: the roundtrip is exact"
+        for p_ref in (0.1, 5.0, 50.0):
+            self.assertAlmostEqual(self.eos.pressure(ratio=self.eos.volume_ratio(pressure=p_ref)),
+                                   p_ref, places=10)
+
+    def test_generic_vs_analytic(self):
+        "The analytical inversions match the generic numerical ones of the parent class"
+        generic = _MurnaghanForTest(k0=167.0, k0p=5.5)
+        for p in (1.0, 10.0, 100.0):
+            self.assertAlmostEqual(self.eos.volume_ratio(pressure=p),
+                                   generic.volume_ratio(pressure=p), places=12)
+        self.assertAlmostEqual(self.eos.pressure(ratio=0.95),
+                               generic.pressure(ratio=0.95), places=6)
+
+    def test_matches_birch_murnaghan_at_low_pressure(self):
+        bm3 = BirchMurnaghan(k0=167.0, k0p=5.5)
+        for p in (0.5, 2.0):
+            self.assertAlmostEqual(self.eos.volume_ratio(pressure=p),
+                                   bm3.volume_ratio(pressure=p), places=4)
+
+    def test_tension_limit(self):
+        "The model is only defined above P0 - K0/K0'"
+        limit = -self.eos.k0 / self.eos.k0p
+        self.assertGreater(self.eos.volume_ratio(pressure=0.99 * limit), 1.0)
+        self.assertRaises(ValueError, self.eos.volume_ratio, 1.01 * limit)
+
+
+class TestPVT(unittest.TestCase):
+    """Composite P-V-T model, gold-like parameters"""
+
+    def setUp(self):
+        self.isothermal = BirchMurnaghan(k0=167.0, k0p=5.5)
+        self.thermal = ThermalExpansion(alpha0=4.2e-5)
+        self.eos = PVT(self.isothermal, self.thermal, dk0dt=-0.02, v0=4.0786 ** 3)
+
+    def test_reference_conditions(self):
+        self.assertAlmostEqual(self.eos.volume_ratio(), 1.0, places=12)
+        self.assertEqual(self.eos.t0, self.thermal.t0)
+        self.assertEqual(self.eos.p0, self.isothermal.p0)
+
+    def test_reduces_to_submodels(self):
+        "At reference temperature only the compression acts, at reference pressure only the expansion"
+        self.assertAlmostEqual(self.eos.volume_ratio(pressure=10.0),
+                               self.isothermal.volume_ratio(pressure=10.0), places=12)
+        self.assertAlmostEqual(self.eos.volume_ratio(temperature=500.0),
+                               self.thermal.volume_ratio(temperature=500.0), places=12)
+
+    def test_composition(self):
+        "V(P,T) = V0(T)/V0 * compression with K0 corrected at T"
+        p, t = 10.0, 500.0
+        corrected = BirchMurnaghan(k0=167.0 - 0.02 * (t - self.eos.t0), k0p=5.5)
+        self.assertAlmostEqual(self.eos.volume_ratio(pressure=p, temperature=t),
+                               self.thermal.volume_ratio(temperature=t) * corrected.volume_ratio(pressure=p),
+                               places=12)
+
+    def test_gauge_at_temperature(self):
+        "Pressure gauge mode at any temperature"
+        for p_ref, t in ((5.0, 500.0), (25.0, 1200.0), (10.0, 150.0)):
+            ratio = self.eos.volume_ratio(pressure=p_ref, temperature=t)
+            self.assertAlmostEqual(self.eos.pressure(ratio=ratio, temperature=t), p_ref, places=8)
+
+    def test_thermometer_at_pressure(self):
+        "Thermometer mode at fixed pressure, generic numerical inversion"
+        ratio = self.eos.volume_ratio(pressure=5.0, temperature=700.0)
+        self.assertAlmostEqual(self.eos.temperature(ratio=ratio, pressure=5.0), 700.0, places=6)
+
+    def test_serialization(self):
+        "The nested representation is JSON-able and instantiable by the factory"
+        import json
+        dico = self.eos.as_dict()
+        self.assertEqual(dico["model"], "PVT")
+        self.assertEqual(dico, json.loads(json.dumps(dico)))
+        clone = EquationOfState.from_dict(dico)
+        self.assertEqual(self.eos, clone)
+        self.assertAlmostEqual(clone.volume_ratio(pressure=10.0, temperature=500.0),
+                               self.eos.volume_ratio(pressure=10.0, temperature=500.0),
+                               places=12)
+
+    def test_dk0pdt(self):
+        "K0' is corrected linearly with temperature, like K0"
+        eos = PVT(self.isothermal, self.thermal, dk0pdt=1.0e-3)
+        t = 800.0
+        corrected = BirchMurnaghan(k0=167.0, k0p=5.5 + 1.0e-3 * (t - eos.t0))
+        self.assertAlmostEqual(eos.volume_ratio(pressure=20.0, temperature=t),
+                               self.thermal.volume_ratio(temperature=t) * corrected.volume_ratio(pressure=20.0),
+                               places=12)
+        self.assertRaises(ValueError, PVT, self.thermal, self.thermal, dk0pdt=1.0e-3)
+
+    def test_dk0dt_validation(self):
+        "dk0dt requires an isothermal model exposing k0, and K0(T) must stay positive"
+        self.assertRaises(ValueError, PVT, self.thermal, self.thermal, dk0dt=-0.02)
+        self.assertRaises(ValueError, self.eos.volume_ratio, 10.0, 9000.0)
+
+
+class TestThermalPressure(unittest.TestCase):
+    """Composite P-V-T model of JCPDS files, thermal pressure approach of Dioptas"""
+
+    # P-V-T points (V/V0, T in K, P in GPa) of the AP2 + Holland-Powell thermal EoS of rhodium,
+    # McHardy et al., Phys. Rev. B 109 (2024) 094113, table III
+    RH_AP2_HP: ClassVar[list] = [
+        (0.873175, 298, 50), (0.803582, 298, 100), (0.719217, 298, 200),
+        (1.022633, 1000, 0), (0.882961, 1000, 50), (0.809807, 1000, 100), (0.722769, 1000, 200),
+        (1.068448, 2000, 0), (0.900305, 2000, 50), (0.820503, 2000, 100), (0.728739, 2000, 200),
+        (1.136101, 3000, 0), (0.920118, 3000, 50), (0.832184, 3000, 100), (0.735063, 3000, 200)]
+
+    def setUp(self):
+        self.isothermal = BirchMurnaghan(k0=167.0, k0p=5.5)
+        self.thermal = VolumeExpansion([4.2e-5, 5.0e-9], t0=298.0)
+        self.eos = ThermalPressure(self.isothermal, self.thermal, dk0dt=-0.02, dk0pdt=1e-4, v0=4.0786 ** 3)
+
+    def test_reference_conditions(self):
+        self.assertAlmostEqual(self.eos.volume_ratio(), 1.0, places=12)
+        self.assertEqual(self.eos.t0, 298.0)
+        self.assertEqual(self.eos.thermal_pressure(), 0.0)
+        self.assertAlmostEqual(self.eos.volume_ratio(pressure=10.0),
+                               self.isothermal.volume_ratio(pressure=10.0), places=12)
+
+    def test_composition(self):
+        "P(V,T) = P(V; K0(T), K0'(T)) + K0(T) [V0(T)/V0 - 1]"
+        ratio, t = 0.9, 800.0
+        dt = t - 298.0
+        k0 = 167.0 - 0.02 * dt
+        corrected = BirchMurnaghan(k0=k0, k0p=5.5 + 1e-4 * dt)
+        expected = corrected.pressure(ratio=ratio) + k0 * (4.2e-5 * dt + 5.0e-9 * dt * dt)
+        self.assertAlmostEqual(self.eos.pressure(ratio=ratio, temperature=t), expected, places=10)
+
+    def test_ambient_expansion(self):
+        "At ambient pressure and t0, the volumetric expansion coefficient is ALPHAT"
+        h = 1e-3
+        alpha = (self.eos.volume_ratio(temperature=298.0 + h) - self.eos.volume_ratio(temperature=298.0 - h)) / (2 * h)
+        self.assertAlmostEqual(alpha / 4.2e-5, 1.0, places=6)
+
+    def test_inversions(self):
+        "Pressure gauge and thermometer modes"
+        for p, t in ((0.0, 700.0), (5.0, 500.0), (25.0, 1200.0)):
+            ratio = self.eos.volume_ratio(pressure=p, temperature=t)
+            self.assertAlmostEqual(self.eos.pressure(ratio=ratio, temperature=t), p, places=8)
+            self.assertAlmostEqual(self.eos.temperature(ratio=ratio, pressure=p), t, places=6)
+
+    def test_serialization(self):
+        dico = self.eos.as_dict()
+        self.assertEqual(dico["model"], "thermal-pressure")
+        self.assertEqual(dico, json.loads(json.dumps(dico)))
+        self.assertEqual(self.eos, EquationOfState.from_dict(dico))
+
+    def test_validation(self):
+        "The thermal pressure is proportional to K0"
+        self.assertRaises(ValueError, ThermalPressure, self.thermal, self.thermal)
+
+    def test_dioptas_rhodium(self):
+        """The parameters optimized for Dioptas by McHardy et al. (2024), table III, reproduce
+        their thermal EoS within 0.6 GPa, from 298 to 3000 K and 0 to 200 GPa"""
+        eos = ThermalPressure(BirchMurnaghan(k0=260.54, k0p=5.114),
+                              VolumeExpansion([2.99e-5, 1.27e-9], t0=298.0),
+                              dk0dt=-6.43e-5, dk0pdt=-9.3e-10)
+        for ratio, t, p in self.RH_AP2_HP:
+            with self.subTest(ratio=ratio, temperature=t):
+                self.assertAlmostEqual(eos.pressure(ratio=ratio, temperature=t), p, delta=0.6)
+
+
+class TestMieGruneisenDebye(unittest.TestCase):
+    """Expanded Mie-Grüneisen-Debye model, checked against the isochors
+    published by Dorogokupets & Dewaele, High Press. Res. 27 (2007) 431,
+    tables 3 (Au) and 4 (Pt): pressure in GPa at x=V/V0 and T in K."""
+
+    TEMPERATURES = (298.15, 500, 1000, 1500, 2000, 2500)
+    ISOCHORS_AU: ClassVar[dict] = {1.0: (0.000, 1.408, 4.921, 8.441, 11.963, 15.485),
+                                   0.9: (23.903, 25.191, 28.419, 31.658, 34.900, 38.143),
+                                   0.8: (70.578, 71.807, 74.911, 78.032, 81.158, 84.286),
+                                   0.7: (162.373, 163.600, 166.742, 169.914, 173.094, 176.277)}
+    ISOCHORS_PT: ClassVar[dict] = {1.0: (0.000, 1.513, 5.259, 8.951, 12.580, 16.142),
+                                   0.9: (38.120, 39.474, 42.909, 46.383, 49.882, 53.404),
+                                   0.8: (107.766, 109.110, 112.598, 116.195, 119.876, 123.638),
+                                   0.7: (236.477, 237.897, 241.675, 245.616, 249.679, 253.855)}
+    # tables 10 (NaCl-B1, at V/V0) and 11 (NaCl-B2, at the molar volume in cm^3), up to 2000 K
+    ISOCHORS_NACL_B1: ClassVar[dict] = {1.0: (0.000, 0.573, 1.962, 3.281, 4.524),
+                                        0.9: (3.271, 3.839, 5.250, 6.630, 7.972),
+                                        0.8: (9.233, 9.812, 11.282, 12.746, 14.193),
+                                        0.7: (20.226, 20.838, 22.416, 24.007, 25.593)}
+    ISOCHORS_NACL_B2: ClassVar[dict] = {17: (26.763, 27.462, 29.270, 31.093, 32.913),
+                                        15: (47.862, 48.625, 50.638, 52.683, 54.733),
+                                        13: (84.903, 85.747, 88.030, 90.372, 92.727),
+                                        11: (153.225, 154.161, 156.801, 159.546, 162.317)}
+
+    def setUp(self):
+        # table 1 of Dorogokupets & Dewaele (2007), V0 from Dewaele et al. (2004)
+        self.au = MieGruneisenDebye(Vinet(k0=167.0, k0p=5.90),
+                                    theta0=170, gamma0=2.89, gamma_inf=1.54, beta=4.36,
+                                    natoms=4, v0=4 * 16.962)
+        self.pt = MieGruneisenDebye(Vinet(k0=277.3, k0p=5.12),
+                                    theta0=220, gamma0=2.82, gamma_inf=1.83, beta=8.11,
+                                    a=-166.9e-6, m=4.32, e=260.0e-6, g=2.4,
+                                    natoms=4, v0=4 * 15.095)
+        # molar volumes of table 1, Z=4 formula units (8 atoms) for B1, Z=1 (2 atoms) for B2
+        self.nacl_b1 = MieGruneisenDebye(Vinet(k0=23.83, k0p=5.09),
+                                         theta0=270, gamma0=1.64, gamma_inf=1.12, beta=4.36,
+                                         a=-24.0e-6, m=7.02,
+                                         natoms=8, v0=4 * 27.015e24 / scipy.constants.Avogadro)
+        self.nacl_b2 = MieGruneisenDebye(Vinet(k0=29.72, k0p=5.14),
+                                         theta0=270, gamma0=1.64, gamma_inf=1.23, beta=6.83,
+                                         a=-24.0e-6, m=7.02,
+                                         natoms=2, v0=24.53e24 / scipy.constants.Avogadro)
+
+    def check_isochors(self, eos, isochors):
+        for ratio, pressures in isochors.items():
+            for temperature, expected in zip(self.TEMPERATURES, pressures):
+                # the published values are reproduced within 0.2%
+                self.assertAlmostEqual(eos.pressure(ratio=ratio, temperature=temperature), expected,
+                                       delta=0.03 + 1e-3 * expected,
+                                       msg=f"V/V0={ratio}, T={temperature}K")
+
+    def test_isochors_au(self):
+        "Quasi-harmonic model: gold"
+        self.check_isochors(self.au, self.ISOCHORS_AU)
+
+    def test_isochors_pt(self):
+        "Expanded model, with anharmonic and electronic contributions: platinum"
+        self.check_isochors(self.pt, self.ISOCHORS_PT)
+
+    def test_isochors_nacl(self):
+        "Expanded model with anharmonicity only, two atoms per formula unit: NaCl-B1 and NaCl-B2"
+        self.check_isochors(self.nacl_b1, self.ISOCHORS_NACL_B1)
+        # table 11 is given at the molar volume, V0 = 24.53 cm^3/mol
+        self.check_isochors(self.nacl_b2, {vm / 24.53: pressures for vm, pressures in self.ISOCHORS_NACL_B2.items()})
+
+    def test_reference_conditions(self):
+        self.assertAlmostEqual(self.au.volume_ratio(), 1.0, places=12)
+        self.assertAlmostEqual(self.au.thermal_pressure(ratio=0.9), 0.0, places=12)
+        self.assertEqual(self.au.p0, 0.0)
+        self.assertRaises(ValueError, MieGruneisenDebye, Vinet(k0=167.0, k0p=5.90),
+                          theta0=170, gamma0=2.89, beta=4.36, natoms=4)
+
+    def test_classical_limit(self):
+        "At high temperature the Debye energy tends to 3NkT: dP/dT = 3 N k gamma / V"
+        ratio = 0.9
+        dpdt = (self.au.thermal_pressure(ratio=ratio, temperature=5001.0)
+                - self.au.thermal_pressure(ratio=ratio, temperature=5000.0))
+        expected = 3 * 4 * scipy.constants.Boltzmann * self.au.gamma(ratio) / (ratio * self.au.v0 * 1e-30) * 1e-9
+        # next term of the expansion: 1 - (Theta/T)^2 / 20, about 1e-4 here
+        self.assertAlmostEqual(dpdt / expected, 1.0, places=3)
+
+    def test_thermal_expansion_au(self):
+        "Volume thermal expansion of gold at ambient conditions, about 4.2e-5 /K"
+        alpha = (self.au.volume_ratio(0.0, 299.15) - self.au.volume_ratio(0.0, 297.15)) / 2.0
+        self.assertAlmostEqual(alpha * 1e5, 4.16, delta=0.01)
+
+    def test_thermometer(self):
+        "Temperature recovered from the volume, at ambient and high pressure"
+        for pressure in (0.0, 30.0):
+            for temperature in (300.0, 800.0, 1300.0):
+                volume = self.au.volume(pressure=pressure, temperature=temperature)
+                self.assertAlmostEqual(self.au.temperature(volume=volume, pressure=pressure), temperature, places=6)
+        # unreachable volume: smaller than the one at 1 K
+        self.assertRaises(ValueError, self.au.temperature, ratio=0.99, pressure=0.0)
+
+    def test_pressure_gauge(self):
+        for temperature in (298.15, 1500.0):
+            ratio = self.pt.volume_ratio(pressure=50.0, temperature=temperature)
+            self.assertAlmostEqual(self.pt.pressure(ratio=ratio, temperature=temperature), 50.0, places=6)
+
+    def test_serialization(self):
+        for eos in (self.au, self.pt):
+            dico = json.loads(json.dumps(eos.as_dict()))
+            self.assertEqual(dico["model"], "Mie-Gruneisen-Debye")
+            self.assertEqual(EquationOfState.from_dict(dico), eos)
+
+
+class TestVolumeExpansion(unittest.TestCase):
+    """Polynomial expansion of the volume, the JCPDS parametrization"""
+
+    def test_polynomial(self):
+        eos = VolumeExpansion([4.26e-5, 1.0e-9])
+        self.assertAlmostEqual(eos.volume_ratio(), 1.0, places=12)
+        dt = 200.0
+        self.assertAlmostEqual(eos.volume_ratio(temperature=eos.t0 + dt),
+                               1.0 + 4.26e-5 * dt + 1.0e-9 * dt * dt,
+                               places=12)
+
+    def test_thermometer(self):
+        eos = VolumeExpansion([4.26e-5])
+        ratio = eos.volume_ratio(temperature=800.0)
+        self.assertAlmostEqual(eos.temperature(ratio=ratio), 800.0, places=6)
+
+    def test_serialization(self):
+        self.assertIn("volume-expansion", EquationOfState.names())
+        eos = VolumeExpansion([4.26e-5, 1.0e-9])
+        self.assertEqual(eos, EquationOfState.from_dict(eos.as_dict()))
+
+
+AU_JCPDS = """VERSION: 4
+COMMENT: Gold
+K0: 166.65
+K0P: 5.4823
+DK0DT: -0.021
+SYMMETRY: CUBIC
+A: 4.07860
+ALPHAT: 4.26e-05
+DALPHADT: 1.5e-08
+DIHKL: 2.35480, 100.0, 1, 1, 1
+DIHKL: 2.03930, 52.0, 2, 0, 0
+"""
+
+
+class TestJCPDS(unittest.TestCase):
+    """Serialization/deserialization of JCPDS (version 4) files with EoS"""
+
+    def test_read(self):
+        "Parse a Dioptas-like gold file"
+        fname = os.path.join(UtilsTest.tempdir, "Au_ref.jcpds")
+        with open(fname, "w", encoding="utf-8") as fd:
+            fd.write(AU_JCPDS)
+        config = CalibrantConfig.from_JCPDS(fname)
+        self.assertEqual(config.description, "Gold")
+        self.assertIn("cubic", config.cell)
+        self.assertEqual(len(config.reflections), 2)
+        self.assertAlmostEqual(config.reflections[0].dspacing, 2.3548, places=6)
+        self.assertEqual(config.reflections[0].hkl, (1, 1, 1))
+        self.assertAlmostEqual(config.reflections[1].intensity, 52.0, places=6)
+        eos = config.eos
+        self.assertIsInstance(eos, ThermalPressure)
+        self.assertEqual(eos.t0, JCPDS_T_REF)
+        self.assertAlmostEqual(eos.isothermal.k0, 166.65, places=6)
+        self.assertAlmostEqual(eos.dk0dt, -0.021, places=6)
+        self.assertEqual(eos.thermal.coefficients, [4.26e-05, 1.5e-08])
+        self.assertAlmostEqual(eos.v0, 4.0786 ** 3, places=6)
+        # sanity check in gauge mode: compression at 10 GPa, 500 K
+        self.assertLess(eos.linear_ratio(pressure=10.0, temperature=298.15), 1.0)
+        self.assertGreater(eos.volume_ratio(temperature=500.0), 1.0)
+
+    def test_roundtrip(self):
+        "CalibrantConfig -> JCPDS -> CalibrantConfig preserves reflections, cell and EoS"
+        cell = Cell.cubic(4.0786, lattice_type="F")
+        config = cell.build_calibrant_config(dmin=1.0)
+        config.name = "Au"
+        config.description = "Gold"
+        config.eos = ThermalPressure(BirchMurnaghan(k0=166.65, k0p=5.4823),
+                                     VolumeExpansion([4.26e-5, 1.0e-9], t0=JCPDS_T_REF),
+                                     dk0dt=-0.021,
+                                     v0=cell.volume)
+        text = config.to_JCPDS()
+        self.assertIn("SYMMETRY: CUBIC", text)
+        self.assertIn("K0: 166.65", text)
+        self.assertIn("DALPHADT: 1e-09", text)
+
+        fname = os.path.join(UtilsTest.tempdir, "Au_out.jcpds")
+        config.save_JCPDS(fname)
+        clone = CalibrantConfig.from_JCPDS(fname)
+
+        self.assertEqual(len(clone.reflections), len(config.reflections))
+        for ref, out in zip(config.reflections, clone.reflections):
+            self.assertAlmostEqual(ref.dspacing, out.dspacing, places=7)
+            self.assertEqual(ref.hkl, out.hkl)
+        self.assertIn("cubic", clone.cell)
+        self.assertEqual(clone.eos, config.eos)
+        self.assertAlmostEqual(clone.eos.linear_ratio(pressure=10.0, temperature=500.0),
+                               config.eos.linear_ratio(pressure=10.0, temperature=500.0),
+                               places=12)
+
+    def test_thermal_only(self):
+        "A calibrant with only a thermal model exports and reimports"
+        cell = Cell.diamond(5.431179)
+        config = cell.build_calibrant_config(dmin=1.5)
+        config.description = "Silicon"
+        config.eos = VolumeExpansion([7.8e-6], t0=JCPDS_T_REF)
+        fname = os.path.join(UtilsTest.tempdir, "Si_out.jcpds")
+        config.save_JCPDS(fname)
+        clone = CalibrantConfig.from_JCPDS(fname)
+        self.assertIsInstance(clone.eos, VolumeExpansion)
+        self.assertAlmostEqual(clone.eos.coefficients[0], 7.8e-6, places=12)
+        # the cell parameter is rounded to 5 decimal places in the cell description
+        self.assertAlmostEqual(clone.eos.v0, cell.volume, places=3)
+
+    def test_vinet(self):
+        "A Vinet EoS is exported with the (pyFAI specific) EOS keyword and reimported"
+        cell = Cell.cubic(4.0786, lattice_type="F")
+        config = cell.build_calibrant_config(dmin=1.0)
+        config.eos = ThermalPressure(Vinet(k0=167.0, k0p=6.0),
+                                     VolumeExpansion([4.26e-5], t0=JCPDS_T_REF),
+                                     v0=cell.volume)
+        text = config.to_JCPDS()
+        self.assertIn("EOS: VINET", text)
+        fname = os.path.join(UtilsTest.tempdir, "Au_vinet.jcpds")
+        config.save_JCPDS(fname)
+        clone = CalibrantConfig.from_JCPDS(fname)
+        self.assertIsInstance(clone.eos.isothermal, Vinet)
+        self.assertEqual(clone.eos, config.eos)
+
+    def test_all_shipped_cards(self):
+        "Every JCPDS card shipped in resources/EoS parses, is self-consistent and survives a write/parse cycle"
+        from ..resources import resource_filename
+        eos_dir = resource_filename("EoS")
+        models = {"BM3": BirchMurnaghan, "Vinet": Vinet}
+        fnames = sorted(f for f in os.listdir(eos_dir) if f.endswith(".jcpds"))
+        self.assertTrue(fnames, f"No JCPDS card found in {eos_dir}")
+        for fname in fnames:
+            with self.subTest(card=fname):
+                filename = os.path.join(eos_dir, fname)
+                config = CalibrantConfig.from_JCPDS(filename)
+                cell = config.to_cell()
+                self.assertIsNotNone(cell)
+                # VOLUME is redundant with the cell parameters, it must match
+                with open(filename) as fd:
+                    volume = [float(line.split(":", 1)[1]) for line in fd if line.upper().startswith("VOLUME:")]
+                self.assertEqual(len(volume), 1)
+                self.assertAlmostEqual(volume[0], cell.volume, delta=1e-3)
+                # d-spacings must match the cell
+                self.assertTrue(config.reflections)
+                for reflection in config.reflections:
+                    self.assertAlmostEqual(reflection.dspacing, cell.d(reflection.hkl), delta=1e-4)
+                # the compression model is the one named in the filename: material_model_authorYear.jcpds
+                isothermal = config.eos.isothermal if isinstance(config.eos, PVT) else config.eos
+                self.assertIs(type(isothermal), models[fname.split("_")[-2]])
+                self.assertAlmostEqual(config.eos.v0, cell.volume, places=6)
+
+                tmp = os.path.join(UtilsTest.tempdir, fname)
+                config.save_JCPDS(tmp)
+                clone = CalibrantConfig.from_JCPDS(tmp)
+                self.assertEqual(clone.eos, config.eos)
+                self.assertEqual(len(clone.reflections), len(config.reflections))
+
+    def test_unsupported_model(self):
+        "A volume expansion with more than 2 coefficients cannot be mapped onto the JCPDS parametrization"
+        cell = Cell.cubic(4.0786, lattice_type="F")
+        config = cell.build_calibrant_config(dmin=1.0)
+        config.eos = VolumeExpansion([4.26e-5, 1.0e-9, 1.0e-12])
+        self.assertRaises(ValueError, config.to_JCPDS)
+
+
+class TestCalibrantHeaders(unittest.TestCase):
+    """Parsing of the (heterogeneous, often hand-crafted) headers of .D files"""
+
+    @classmethod
+    def setUpClass(cls):
+        from ..utils import get_calibration_dir
+        cls.calibration_dir = get_calibration_dir()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.calibration_dir = None
+
+    def config(self, name):
+        return CalibrantConfig.from_dspacing(os.path.join(self.calibration_dir, name + ".D"))
+
+    def test_all_shipped_files_roundtrip(self):
+        "Every calibrant file shipped with pyFAI parses and survives a write/parse cycle unchanged"
+        counter = 0
+        for fname in sorted(os.listdir(self.calibration_dir)):
+            if not fname.endswith(".D"):
+                continue
+            counter += 1
+            config = CalibrantConfig.from_dspacing(os.path.join(self.calibration_dir, fname))
+            self.assertTrue(config.reflections, fname)
+
+            tmp = os.path.join(UtilsTest.tempdir, fname)
+            config.save(tmp)
+            clone = CalibrantConfig.from_dspacing(tmp)
+            for attribute in ("name", "description", "cell", "space_group", "reference"):
+                self.assertEqual(getattr(config, attribute), getattr(clone, attribute),
+                                 f"{attribute} of {fname}")
+            self.assertEqual(len(config.reflections), len(clone.reflections), fname)
+            for ref, out in zip(config.reflections, clone.reflections):
+                self.assertEqual(ref.dspacing, out.dspacing, fname)
+                self.assertEqual(ref.hkl, out.hkl, fname)
+                self.assertEqual(ref.multiplicity, out.multiplicity, fname)
+                self.assertEqual(ref.intensity, out.intensity, fname)
+        self.assertGreaterEqual(counter, 39, "the shipped calibrant files were found")
+
+    def test_to_cell_flavors(self):
+        "The various hand-crafted cell descriptions are interpreted correctly"
+        # unicode, centering word: `Face centered cubic cell a=5.411651Å ... α=90° ...`
+        cell = self.config("CeO2").to_cell()
+        self.assertEqual(cell.lattice, "cubic")
+        self.assertEqual(cell.type, "F")
+        self.assertAlmostEqual(cell.a, 5.411651, places=6)
+        # ASCII names, no unit: `Cubic cell a=4.0495 ... alpha=90.000 ... (Fm3m)`
+        cell = self.config("Al").to_cell()
+        self.assertEqual(cell.lattice, "cubic")
+        self.assertEqual(cell.type, "F", "centering recovered from the space group Fm3m")
+        self.assertAlmostEqual(cell.a, 4.0495, places=4)
+        # double lattice word: `Rhombohedral hexagonal cell ... (R-3c, 167)`
+        cell = self.config("alpha_Al2O3_SRM676a_2015").to_cell()
+        self.assertEqual(cell.lattice, "hexagonal")
+        self.assertEqual(cell.type, "R")
+        self.assertAlmostEqual(cell.c, 12.99231, places=5)
+        self.assertAlmostEqual(cell.gamma, 120.0, places=6)
+        # bare values: `14.2600  14.2600  14.2600   90.000   90.000   90.000 (Fm3)`
+        cell = self.config("C60").to_cell()
+        self.assertEqual(cell.lattice, "cubic")
+        self.assertAlmostEqual(cell.a, 14.26, places=4)
+        # bare values, hexagonal: `2.4560   2.4560   6.6960   90.000   90.000  120.000`
+        cell = self.config("graphite").to_cell()
+        self.assertEqual(cell.lattice, "hexagonal")
+        self.assertAlmostEqual(cell.c, 6.696, places=4)
+        # partial parameters: `Monoclinic cell a=29.59 b=6.15 c=3.98 beta=95.5 (P21/a)`
+        cell = self.config("PBBA").to_cell()
+        self.assertEqual(cell.lattice, "monoclinic")
+        self.assertAlmostEqual(cell.beta, 95.5, places=4)
+        self.assertAlmostEqual(cell.alpha, 90.0, places=6)
+        # pseudo-crystal with infinite parameters and free text yield None
+        self.assertIsNone(self.config("AgBh").to_cell())
+        self.assertIsNone(self.config("CrOx").to_cell())
+        self.assertIsNone(self.config("mock").to_cell())
+
+    def test_dspacing_consistency(self):
+        "The cell rebuilt from the header reproduces the tabulated d-spacings"
+        for name in ("CeO2", "LaB6", "Si"):
+            config = self.config(name)
+            cell = config.to_cell()
+            for reflection in config.reflections[:5]:
+                if reflection.hkl:
+                    self.assertAlmostEqual(cell.d(reflection.hkl) / reflection.dspacing, 1.0,
+                                           places=3, msg=f"{name} {reflection.hkl}")
+
+    def test_eos_roundtrip(self):
+        "The EoS survives a write/parse cycle of the .D file"
+        config = self.config("CeO2")
+        cell = config.to_cell()
+        config.eos = PVT(BirchMurnaghan(k0=220.0, k0p=4.4),
+                         VolumeExpansion([3.5e-5]),
+                         dk0dt=-0.02,
+                         v0=cell.volume)
+        tmp = os.path.join(UtilsTest.tempdir, "CeO2_eos.D")
+        config.save(tmp)
+        with open(tmp, encoding="utf-8") as fd:
+            text = fd.read()
+        self.assertIn("# EoS: {", text)
+        clone = CalibrantConfig.from_dspacing(tmp)
+        self.assertEqual(clone.eos, config.eos)
+        self.assertEqual(clone.cell, config.cell)
+        self.assertEqual(len(clone.reflections), len(config.reflections))
+
+    def test_intensity_without_multiplicity(self):
+        "Reflections with an intensity but no multiplicity (e.g. imported from JCPDS) round-trip"
+        config = CalibrantConfig(name="jcpds_like")
+        config.reflections = [Reflection(dspacing=2.3548, intensity=100.0, hkl=Miller(1, 1, 1)),
+                              Reflection(dspacing=2.0393, intensity=52.0, hkl=Miller(2, 0, 0))]
+        tmp = os.path.join(UtilsTest.tempdir, "jcpds_like.D")
+        config.save(tmp)
+        clone = CalibrantConfig.from_dspacing(tmp)
+        self.assertEqual(len(clone.reflections), 2)
+        self.assertEqual(clone.reflections[0].intensity, 100.0)
+        self.assertIsNone(clone.reflections[0].multiplicity)
+        self.assertEqual(clone.reflections[1].hkl, (2, 0, 0))
+        self.assertEqual(clone.reflections[1].intensity, 52.0)
+
+    def test_eos_corrupted(self):
+        "A hand-mangled EoS line does not prevent the calibrant from loading"
+        config = self.config("CeO2")
+        config.eos = BirchMurnaghan(k0=220.0, k0p=4.4)
+        tmp = os.path.join(UtilsTest.tempdir, "CeO2_bad_eos.D")
+        config.save(tmp)
+        with open(tmp, encoding="utf-8") as fd:
+            text = fd.read()
+        with open(tmp, "w", encoding="utf-8") as fd:
+            fd.write(text.replace('"model"', '"mangled'))
+        with self.assertLogs("pyFAI.io.calibrant_config", level="WARNING"):
+            clone = CalibrantConfig.from_dspacing(tmp)
+        self.assertIsNone(clone.eos)
+        self.assertEqual(len(clone.reflections), len(config.reflections))
+
+    @staticmethod
+    def _windows_open(file, mode="r", **kwargs):
+        "Mimic the defaults of `open` under Windows: cp1252 locale encoding, `\\n` written as `\\r\\n`"
+        if "b" not in mode:
+            kwargs.setdefault("encoding", "cp1252")
+            if "r" not in mode:
+                kwargs.setdefault("newline", "\r\n")
+        return open(file, mode, **kwargs)
+
+    def test_bug_2988_encoding(self):
+        "#2988: under Windows, the UTF-8 header of CeO2.D was decoded with the locale encoding"
+        with unittest.mock.patch("pyFAI.io.calibrant_config.open", self._windows_open, create=True):
+            config = self.config("CeO2")
+        self.assertIn("a=5.411651\N{LATIN CAPITAL LETTER A WITH RING ABOVE}", config.cell)
+        cell = config.to_cell()
+        self.assertIsNotNone(cell, "cell parsed from the header")
+        self.assertAlmostEqual(cell.a, 5.411651, places=6)
+
+    def test_bug_2988_line_endings(self):
+        "#2988: under Windows, saved .D files ended lines with `\\r\\r\\n`, losing the header on reading"
+        config = self.config("CeO2")
+        tmp = os.path.join(UtilsTest.tempdir, "CeO2_2988.D")
+        with unittest.mock.patch("pyFAI.io.calibrant_config.open", self._windows_open, create=True), \
+             unittest.mock.patch.object(os, "linesep", "\r\n"):
+            config.save(tmp)
+            clone = CalibrantConfig.from_dspacing(tmp)
+        with open(tmp, "rb") as fd:
+            self.assertNotIn(b"\r\r\n", fd.read())
+        self.assertEqual(clone.cell, config.cell)
+        self.assertEqual(clone.reference, config.reference)
+        self.assertIsNotNone(clone.to_cell())
 
 
 class TestLatticeCentring(unittest.TestCase):
@@ -150,6 +1054,18 @@ def suite():
     testsuite = unittest.TestSuite()
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite.addTest(loader(TestCrystallography))
+    testsuite.addTest(loader(TestEquationOfState))
+    testsuite.addTest(loader(TestVinet))
+    testsuite.addTest(loader(TestBirchMurnaghan))
+    testsuite.addTest(loader(TestThermalExpansion))
+    testsuite.addTest(loader(TestLatticeExpansion))
+    testsuite.addTest(loader(TestMurnaghan))
+    testsuite.addTest(loader(TestPVT))
+    testsuite.addTest(loader(TestThermalPressure))
+    testsuite.addTest(loader(TestMieGruneisenDebye))
+    testsuite.addTest(loader(TestVolumeExpansion))
+    testsuite.addTest(loader(TestJCPDS))
+    testsuite.addTest(loader(TestCalibrantHeaders))
     testsuite.addTest(loader(TestLatticeCentring))
     return testsuite
 

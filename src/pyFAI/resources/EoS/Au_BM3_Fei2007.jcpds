@@ -1,0 +1,23 @@
+VERSION:   4
+COMMENT: Gold (Au), Fm-3m - Fei et al. (2007) PNAS 104, 9182-9186, doi:10.1073/pnas.0609013104, table 1
+COMMENT: 3rd order Birch-Murnaghan fit at 300 K, see Au_Vinet_Fei2007.jcpds for the Vinet fit
+COMMENT: Thermal model of the source: Mie-Gruneisen-Debye, theta0=170 K, gamma0=2.97, q=0.6
+COMMENT: ALPHAT, DALPHADT, DK0DT, DK0PDT fitted on this model (thermal pressure, as in Dioptas) between 298 and 1000 K, from 0 GPa down to V/V0=0.8: pressure within 0.02 GPa, temperature within 0.4 K at 0 GPa
+COMMENT: Intensities calculated (Cu Ka, Cromer-Mann form factors, no thermal factor)
+K0:        167.000
+K0P:       5.770
+SYMMETRY:  CUBIC
+A:         4.07865
+VOLUME:    67.8500
+DK0DT:     2.5797e-03
+DK0PDT:    -7.6079e-05
+ALPHAT:    4.2918e-05
+DALPHADT:  -2.4750e-10
+DIHKL:       2.3548   100.0   1   1   1
+DIHKL:       2.0393    49.4   2   0   0
+DIHKL:       1.4420    33.0   2   2   0
+DIHKL:       1.2298    39.8   3   1   1
+DIHKL:       1.1774    11.7   2   2   2
+DIHKL:       1.0197     6.5   4   0   0
+DIHKL:       0.9357    25.5   3   3   1
+DIHKL:       0.9120    26.2   4   2   0
