@@ -31,7 +31,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/09/2026"
+__date__ = "18/11/2026"
 
 import logging
 import os
@@ -150,6 +150,36 @@ class TestMathUtil(utilstest.ParametricTestCase):
         z = y.copy()
         z[w] = numpy.nan
         self.assertLess(abs(y - mathutil.interp_filter(z)).max(), 0.01, "error is small")
+
+    def test_build_qmask(self):
+        """qmask gives, for each pixel, the index of the band of 2theta it belongs to (#2999)"""
+        from ..ext.mathutil import build_qmask
+        rng = utilstest.UtilsTest.get_rng()
+        tth = rng.uniform(0, 1, size=(30, 40))
+        bounds = numpy.sort(rng.uniform(0.05, 0.95, size=2 * 12))  # sorted, disjoint bands
+        tth_min, tth_max = bounds[::2].copy(), bounds[1::2].copy()
+        tth[0, :3] = tth_min[:3]  # on the lower bound: inside
+        tth[1, :3] = tth_max[:3]  # on the upper bound: outside
+        tth[2, 0], tth[2, 1] = tth_min[0] - 1e-3, tth_max[-1] + 1e-3  # before the first band, after the last one
+        mask = rng.uniform(size=tth.shape) < 0.1
+        expected = numpy.full(tth.shape, -1, dtype=numpy.int32)
+        count = numpy.zeros(tth_min.size, dtype=numpy.int32)
+        for idx in numpy.ndindex(*tth.shape):
+            if mask[idx]:
+                expected[idx] = -2
+                continue
+            for r, (lb, ub) in enumerate(zip(tth_min, tth_max)):
+                if lb <= tth[idx] < ub:
+                    expected[idx] = r
+                    count[r] += 1
+                    break
+        qmask, cnt = build_qmask(tth, tth_min, tth_max, mask)
+        self.assertTrue(numpy.array_equal(qmask, expected), "qmask with a mask")
+        self.assertTrue(numpy.array_equal(cnt, count), "count with a mask")
+        qmask, _ = build_qmask(tth, tth_min, tth_max)
+        self.assertTrue(numpy.array_equal(qmask[~mask], expected[~mask]), "qmask without mask, on the valid pixels")
+        self.assertGreater(count.min(), 0, "all the bands are populated")
+        self.assertTrue((expected == -1).any(), "some pixels are out of the bands")
 
     def test_is_far_from_group_cython(self):
         rng = utilstest.UtilsTest.get_rng()
