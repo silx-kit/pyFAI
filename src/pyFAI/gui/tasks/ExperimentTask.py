@@ -24,7 +24,7 @@
 
 __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "25/08/2026"
+__date__ = "20/11/2026"
 
 import logging
 
@@ -45,6 +45,43 @@ from ..utils import FilterBuilder, units, validators
 from .AbstractCalibrationTask import AbstractCalibrationTask
 
 _logger = logging.getLogger(__name__)
+
+
+def formatDetectorSizes(detector) -> tuple[str, str]:
+    """Pretty-print the shape and the pixel size of a detector, with and without binning.
+
+    The shape is the binned shape, followed by the unbinned `max_shape`.
+    The pixel size is the unbinned (native) pixel size, followed by the binned pixel size
+    when the detector is binned. Pixel sizes are expressed in µm.
+
+    :param detector: Detector instance, its `binning` is taken into account
+    :return: 2-tuple of strings (size, pixel size), "N.A." when not available
+    """
+    try:
+        shape = detector.shape
+        maxShape = detector.max_shape
+        size = f"{shape[0]} × {shape[1]} (max {maxShape[0]} × {maxShape[1]})"
+    except Exception as e:
+        # Is the detector without shape?
+        _logger.debug(e, exc_info=True)
+        size = "N.A."
+
+    try:
+        binning = tuple(detector.binning)
+        binned = [detector.pixel1, detector.pixel2]
+        native = [binned[0] / binning[0], binned[1] / binning[1]]
+        nativeText = " × ".join(f"{s * 10 ** 6:0.1f}" for s in native)
+        if binning == (1, 1):
+            pixelSize = nativeText
+        else:
+            binnedText = " × ".join(f"{s * 10 ** 6:0.1f}" for s in binned)
+            pixelSize = f"{nativeText} (binned {binnedText})"
+    except Exception as e:
+        # Is heterogeneous detectors have pixel size?
+        _logger.debug(e, exc_info=True)
+        pixelSize = "N.A."
+
+    return size, pixelSize
 
 
 class ExperimentTask(AbstractCalibrationTask):
@@ -346,17 +383,7 @@ class ExperimentTask(AbstractCalibrationTask):
 
         else:
             self._detectorLabel.setStyleSheet("QLabel { }")
-            text = [str(s) for s in detector.max_shape]
-            text = " × ".join(text)
-            self._detectorSize.setText(text)
-            try:
-                text = [f"{s * 10 ** 6:0.1f}" for s in [detector.pixel1, detector.pixel2]]
-                text = " × ".join(text)
-            except Exception as e:
-                # Is heterogeneous detectors have pixel size?
-                _logger.debug(e, exc_info=True)
-                text = "N.A."
-            self._detectorPixelSize.setText(text)
+            self.__setDetectorSizeTexts(detector)
             self._detectorOrientationName.setText(detector.orientation.name)
             self._detectorOrientationValue.setText(f"({detector.orientation.value})")
             if detector.sensor:
@@ -385,6 +412,15 @@ class ExperimentTask(AbstractCalibrationTask):
             self._detectorFileDescription.setText(fileDescription if fileDescription else "")
 
         self.__updateDetector()
+
+    def __setDetectorSizeTexts(self, detector):
+        """Display the size and pixel size of the detector, binned and unbinned.
+
+        :param detector: Detector whose `binning` is already up-to-date with the image
+        """
+        size, pixelSize = formatDetectorSizes(detector)
+        self._detectorSize.setText(size)
+        self._detectorPixelSize.setText(pixelSize)
 
     def __displayError(self, label, message=""):
         self._error.setVisible(True)
@@ -450,6 +486,7 @@ class ExperimentTask(AbstractCalibrationTask):
         self._detectorSizeUnit.setVisible(detector is not None)
         self.__updateDetectorTemplate()
         if detector.guess_binning(image):
+            self.__setDetectorSizeTexts(detector)
             text = [str(s) for s in binning]
             text = " × ".join(text)
             self._binning.setText(text)
