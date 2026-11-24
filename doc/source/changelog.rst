@@ -22,7 +22,7 @@ Change-log of versions
 - Bug fixes:
 
   * Fix the calibrant files read or written under Windows (#2988, #2990)
-  * Fix the crash (heap corruption) when integration results are combined (`union`, `+`, `-`, `renormalize`) from several threads (#3003)
+  * Fix crashes (heap corruption) when pyFAI is used from several threads: integrating with one integrator per thread, combining integration results, sharing a parallax-corrected integrator or a goniometer (#3003)
 
 - Documentation:
 
