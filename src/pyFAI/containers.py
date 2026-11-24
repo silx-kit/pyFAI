@@ -29,7 +29,7 @@ __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __contact__ = "valentin.valls@esrf.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "30/09/2026"
+__date__ = "24/11/2026"
 __status__ = "development"
 
 import collections
@@ -47,6 +47,7 @@ from numpy.typing import ArrayLike
 
 from .utils.dataclasses import case_insensitive_dataclass, dataclass  # noqa
 from .utils.decorators import deprecated_warning
+from .utils.mathutil import ThreadLocalNumExpr
 
 logger = logging.getLogger(__name__)
 
@@ -306,10 +307,10 @@ class IntegrateResult(_CopyableTuple):
         "_radial_range",
         "_azimuth_range",
     }
-    # Those expression are used to calculated mean, std and sem
-    EXPR_AVG = numexpr.NumExpr("where(sum_normalization == 0.0, dummy, sum_signal/sum_normalization)")
-    EXPR_STD = numexpr.NumExpr("where(sum_normalization2 == 0.0, dummy, sqrt(sum_variance/sum_normalization2))")
-    EXPR_SEM = numexpr.NumExpr("where(sum_normalization == 0.0, dummy, sqrt(sum_variance)/sum_normalization)")
+    # Those expression are used to calculated mean, std and sem, compiled once per thread (#3003)
+    EXPR_AVG = ThreadLocalNumExpr("where(sum_normalization == 0.0, dummy, sum_signal/sum_normalization)")
+    EXPR_STD = ThreadLocalNumExpr("where(sum_normalization2 == 0.0, dummy, sqrt(sum_variance/sum_normalization2))")
+    EXPR_SEM = ThreadLocalNumExpr("where(sum_normalization == 0.0, dummy, sqrt(sum_variance)/sum_normalization)")
 
     def __init__(self):
         self._sum_signal = None  # sum of signal

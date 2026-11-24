@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/08/2026"
+__date__ = "24/11/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -59,6 +59,7 @@ from .multi_geometry import MultiGeometry
 from .units import CHI_RAD, TTH_RAD, CONST_hc, CONST_q
 from .utils import StringTypes
 from .utils.decorators import deprecated
+from .utils.mathutil import ThreadLocalNumExpr
 
 logger = logging.getLogger(__name__)
 
@@ -189,7 +190,7 @@ class GeometryTransformation:
             if key in self.variables:
                 raise RuntimeError(f"The keyword `{key}` is already defined, please chose another variable name")
             self.variables[key] = numpy.nan
-        self.codes = OrderedDict(((name, numexpr.NumExpr(expr)) for name, expr in self.expressions.items()))
+        self.codes = OrderedDict(((name, ThreadLocalNumExpr(expr)) for name, expr in self.expressions.items()))
 
     @property
     def dist_expr(self):
@@ -336,7 +337,7 @@ class ExtendedTransformation:
                 raise RuntimeError("The keyword `%s` is already defined, please chose another variable name", key)
             self.variables[key] = numpy.nan
 
-        self.codes = OrderedDict(((name, numexpr.NumExpr(expr)) for name, expr in self.expressions.items()))
+        self.codes = OrderedDict(((name, ThreadLocalNumExpr(expr)) for name, expr in self.expressions.items()))
 
     def __call__(self, param, pos):
         """This makes the class instance behave like a function,

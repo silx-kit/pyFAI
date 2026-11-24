@@ -33,10 +33,13 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/10/2025"
+__date__ = "24/11/2026"
 
 import copy
 import logging
+import subprocess
+import sys
+import textwrap
 import unittest
 
 import numpy
@@ -83,6 +86,33 @@ class TestUnits(unittest.TestCase):
         self.assertEqual(q0,q1)
         self.assertEqual(q1,q2)
         self.assertEqual(q0,q2)
+
+    def test_bug_3003(self):
+        """#3003: units are shared singletons, their numexpr formula must be usable from several threads.
+
+        Each thread has its own geometry, only the unit is shared. Runs in a subprocess since a
+        heap corruption kills the interpreter.
+        """
+        script = textwrap.dedent("""
+            import threading
+            from pyFAI.detectors import Detector
+            from pyFAI.geometry import Geometry
+
+            def worker():
+                for _ in range(300):
+                    geo = Geometry(dist=0.1, wavelength=1e-10,
+                                   detector=Detector(1e-4, 1e-4, max_shape=(30, 30)))
+                    geo.center_array(unit="q_nm^-1")
+
+            threads = [threading.Thread(target=worker) for _ in range(4)]
+            for t in threads:
+                t.start()
+            for t in threads:
+                t.join()
+            """)
+        proc = subprocess.run([sys.executable, "-c", script], env=UtilsTest.get_test_env(),
+                              capture_output=True, text=True, timeout=600)
+        self.assertEqual(proc.returncode, 0, msg=f"#3003: return code {proc.returncode}\n{proc.stderr[-2000:]}")
 
 
 def suite():

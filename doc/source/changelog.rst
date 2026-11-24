@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 18/11/2026
+:Date: 24/11/2026
 :Keywords: changelog
 
 Change-log of versions
@@ -24,6 +24,7 @@ Change-log of versions
 - Bug fixes:
 
   * Fix the calibrant files read or written under Windows (#2988, #2990)
+  * Fix crashes (heap corruption) when pyFAI is used from several threads: integrating with one integrator per thread, combining integration results, sharing a parallax-corrected integrator or a goniometer (#3003)
 
 - Documentation:
 

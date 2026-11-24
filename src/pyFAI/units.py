@@ -36,7 +36,7 @@ __authors__ = ["Picca Frédéric-Emmanuel", "Jérôme Kieffer", "Edgar Gutierrez
 __contact__ = "picca@synchrotron-soleil.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/08/2026"
+__date__ = "24/11/2026"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -52,6 +52,7 @@ from scipy.spatial.transform import Rotation
 
 from .containers import ImmutableDict
 from .utils.decorators import deprecated
+from .utils.mathutil import ThreadLocalNumExpr
 
 logger = logging.getLogger(__name__)
 TWO_PI = 2 * PI
@@ -141,7 +142,7 @@ class Unit:
         if (numexpr is not None) and isinstance(formula, str):
             res = numexpr.necompiler.getExprNames(formula, context={})
             signature = [(key, numpy.float64) for key in res[0]]
-            ne_formula = numexpr.NumExpr(formula, signature)
+            ne_formula = ThreadLocalNumExpr(formula, signature)
 
             def ne_equation(x, y, z=None, wavelength=None, ne_formula=ne_formula):
                 ldict = {"π": PI,
@@ -294,7 +295,7 @@ class UnitFiber(Unit):
                 (key, numpy.float64) for key in "xyzλπηχ" if key in self.formula
             ]
 
-            ne_formula = numexpr.NumExpr(self.formula, signature)
+            ne_formula = ThreadLocalNumExpr(self.formula, signature)
 
             def ne_equation(
                 x,
