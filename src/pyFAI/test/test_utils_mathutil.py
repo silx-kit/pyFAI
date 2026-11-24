@@ -31,10 +31,13 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "20/09/2026"
+__date__ = "24/11/2026"
 
+import copy
 import logging
 import os
+import pickle
+import threading
 import unittest
 
 import fabio
@@ -178,6 +181,35 @@ class TestMathUtil(utilstest.ParametricTestCase):
         self.assertFalse(nan_equal(5, numpy.nan), "Nop")
         self.assertFalse(nan_equal(numpy.nan,5), "Nop")
         self.assertTrue(nan_equal(numpy.nan, numpy.nan), "Expected")
+
+    def test_thread_local_numexpr(self):
+        """#3003: one compiled expression per thread, copyable and picklable"""
+        expr = mathutil.ThreadLocalNumExpr("where(b == 0.0, dummy, a / b)")
+        self.assertEqual(expr.input_names, ("a", "b", "dummy"))
+        a = numpy.arange(10.0)
+        b = numpy.arange(10.0) % 3
+        ref = numpy.where(b == 0.0, -1.0, a / numpy.where(b == 0, 1, b))
+        self.assertTrue(numpy.allclose(expr(a, b, -1.0), ref))
+
+        compiled = {}
+
+        def worker(tid):
+            compiled[tid] = expr.compiled
+            self.assertTrue(numpy.allclose(expr(a, b, -1.0), ref))
+
+        threads = [threading.Thread(target=worker, args=(t,)) for t in range(3)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+        ids = {id(c) for c in compiled.values()} | {id(expr.compiled)}
+        self.assertEqual(len(ids), 4, "one compiled object per thread")
+        self.assertIs(expr.compiled, expr.compiled, "compiled once per thread")
+
+        for clone in (copy.copy(expr), copy.deepcopy(expr), pickle.loads(pickle.dumps(expr))):
+            self.assertEqual(clone.expression, expr.expression)
+            self.assertIsNot(clone.compiled, expr.compiled)
+            self.assertTrue(numpy.allclose(clone(a, b, -1.0), ref))
 
 
 def suite():

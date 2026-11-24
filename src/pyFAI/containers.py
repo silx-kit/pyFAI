@@ -35,7 +35,6 @@ __status__ = "development"
 import collections
 import logging
 import math
-import threading
 import warnings
 from copy import deepcopy
 from dataclasses import asdict, fields  # noqa
@@ -48,6 +47,7 @@ from numpy.typing import ArrayLike
 
 from .utils.dataclasses import case_insensitive_dataclass, dataclass  # noqa
 from .utils.decorators import deprecated_warning
+from .utils.mathutil import ThreadLocalNumExpr
 
 logger = logging.getLogger(__name__)
 
@@ -209,31 +209,6 @@ class ImmutableDict(collections.abc.Mapping):
         yield from self.__named_tuple._fields
 
 
-class _ThreadLocalNumExpr:
-    """Descriptor providing each thread with its own compiled numexpr expression.
-
-    A compiled `numexpr.NumExpr` object is not thread-safe: calling it from several threads
-    corrupts the heap (#3003, https://github.com/pydata/numexpr/issues/569).
-
-    :param expression: numexpr expression to compile, once per thread
-    """
-    def __init__(self, expression: str):
-        self.expression = expression
-        self._local = threading.local()
-
-    def __get__(self, instance, owner=None) -> numexpr.NumExpr:
-        """Return the expression compiled for the calling thread, compiling it on first access
-
-        :param instance: instance the descriptor is accessed from (unused)
-        :param owner: class the descriptor is accessed from (unused)
-        :return: compiled numexpr expression private to the calling thread
-        """
-        compiled = getattr(self._local, "compiled", None)
-        if compiled is None:
-            compiled = self._local.compiled = numexpr.NumExpr(self.expression)
-        return compiled
-
-
 class ErrorModel(IntEnum):
     NO = 0
     VARIANCE = 1
@@ -333,9 +308,9 @@ class IntegrateResult(_CopyableTuple):
         "_azimuth_range",
     }
     # Those expression are used to calculated mean, std and sem, compiled once per thread (#3003)
-    EXPR_AVG = _ThreadLocalNumExpr("where(sum_normalization == 0.0, dummy, sum_signal/sum_normalization)")
-    EXPR_STD = _ThreadLocalNumExpr("where(sum_normalization2 == 0.0, dummy, sqrt(sum_variance/sum_normalization2))")
-    EXPR_SEM = _ThreadLocalNumExpr("where(sum_normalization == 0.0, dummy, sqrt(sum_variance)/sum_normalization)")
+    EXPR_AVG = ThreadLocalNumExpr("where(sum_normalization == 0.0, dummy, sum_signal/sum_normalization)")
+    EXPR_STD = ThreadLocalNumExpr("where(sum_normalization2 == 0.0, dummy, sqrt(sum_variance/sum_normalization2))")
+    EXPR_SEM = ThreadLocalNumExpr("where(sum_normalization == 0.0, dummy, sqrt(sum_variance)/sum_normalization)")
 
     def __init__(self):
         self._sum_signal = None  # sum of signal

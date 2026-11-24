@@ -33,11 +33,12 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "16/10/2026"
+__date__ = "24/11/2026"
 __status__ = "production"
 
 import logging
 import math
+import threading
 import time
 
 import numpy
@@ -50,6 +51,12 @@ try:
 except ImportError:
     logger.debug("Backtrace", exc_info=True)
     _relabel = None
+
+try:
+    import numexpr
+except ImportError:
+    logger.debug("Backtrace", exc_info=True)
+    numexpr = None
 
 EPS32 = 1.0 + numpy.finfo(numpy.float32).eps
 
@@ -1110,3 +1117,51 @@ def nan_equal(a: float, b: float) -> bool:
     if a == b:
         return True
     return numpy.isnan(a) and numpy.isnan(b)
+
+
+class ThreadLocalNumExpr:
+    """Compiled numexpr expression which can be shared between threads.
+
+    A compiled `numexpr.NumExpr` object is not thread-safe: calling it from several threads
+    corrupts the heap (#3003, https://github.com/pydata/numexpr/issues/569). This wrapper
+    compiles the expression once per thread, on first use, and behaves like a `NumExpr`
+    (callable, `input_names`). Unlike `NumExpr`, it can be copied and pickled.
+
+    :param expression: numexpr expression
+    :param signature: sequence of (name, dtype) of the inputs, as for `numexpr.NumExpr`
+    :param kwargs: extra parameters passed to `numexpr.NumExpr`
+    """
+
+    def __init__(self, expression: str, signature=(), **kwargs):
+        if numexpr is None:
+            raise RuntimeError("ThreadLocalNumExpr requires the *numexpr* package")
+        self.expression = expression
+        self.signature = tuple(signature)
+        self.kwargs = kwargs
+        self._local = threading.local()
+        # Compile in the current thread: invalid expressions fail early
+        self.input_names = self.compiled.input_names
+
+    @property
+    def compiled(self):
+        """The `numexpr.NumExpr` object private to the calling thread, compiled on first access"""
+        compiled = getattr(self._local, "compiled", None)
+        if compiled is None:
+            compiled = self._local.compiled = numexpr.NumExpr(self.expression, self.signature, **self.kwargs)
+        return compiled
+
+    def __call__(self, *args, **kwargs):
+        """Evaluate the expression, same parameters as calling a `numexpr.NumExpr`
+
+        :return: result of the evaluation
+        """
+        return self.compiled(*args, **kwargs)
+
+    def __getstate__(self):
+        return {"expression": self.expression, "signature": self.signature, "kwargs": self.kwargs}
+
+    def __setstate__(self, state):
+        self.__init__(state["expression"], state["signature"], **state["kwargs"])
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.expression!r})"

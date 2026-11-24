@@ -28,7 +28,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/08/2026"
+__date__ = "24/11/2026"
 __status__ = "development"
 __docformat__ = 'restructuredtext'
 
@@ -40,6 +40,8 @@ import numexpr
 import numpy
 import scipy.integrate
 import scipy.signal
+
+from .utils.mathutil import ThreadLocalNumExpr
 
 logger = logging.getLogger(__name__)
 EPS = numpy.finfo("float64").eps
@@ -221,7 +223,7 @@ class ThinSensor(BaseSensor):
             BaseSensor.__init__(self, -log(1.0 - efficiency) / self.thickness)
         else:
             BaseSensor.__init__(self, mu)
-        self.formula = numexpr.NumExpr("where(x<0, 0.0, mu*exp(-mu*x))")
+        self.formula = ThreadLocalNumExpr("where(x<0, 0.0, mu*exp(-mu*x))")
 
     @property
     def efficiency(self):
