@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 04/11/2026
+:Date: 24/11/2026
 :Keywords: changelog
 
 Change-log of versions
@@ -22,6 +22,7 @@ Change-log of versions
 - Bug fixes:
 
   * Fix the calibrant files read or written under Windows (#2988, #2990)
+  * Fix the crash (heap corruption) when integration results are combined (`union`, `+`, `-`, `renormalize`) from several threads (#3003)
 
 - Documentation:
 

@@ -31,10 +31,13 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jérôme.Kieffer@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "03/11/2026"
+__date__ = "24/11/2026"
 
 import copy
 import logging
+import subprocess
+import sys
+import textwrap
 import unittest
 
 import fabio
@@ -349,6 +352,46 @@ class TestContainer(unittest.TestCase):
         self.assertEqual(list(d.keys()), ["a", "b"])
         self.assertEqual(list(e.values()), [1, 2])
         self.assertEqual(list(d.items()), [("a", 1), ("b", 2)])
+
+
+    def test_bug_3003(self):
+        """#3003: `union` from several threads must not corrupt the heap.
+
+        The precompiled numexpr expressions shared at class level are not thread-safe
+        (numexpr#569) on small arrays, whatever NUMEXPR_NUM_THREADS. The scenario runs in a
+        subprocess since a heap corruption kills the interpreter.
+        """
+        script = textwrap.dedent("""
+            import threading
+            import numpy
+            from pyFAI import containers
+
+            def make_result(n, rng):
+                res = containers.Integrate1dResult(numpy.arange(n), numpy.zeros(n), numpy.zeros(n))
+                res._set_sum_signal(rng.random(n))
+                res._set_sum_normalization(rng.random(n) + 1)
+                res._set_sum_normalization2(rng.random(n) + 1)
+                res._set_sum_variance(rng.random(n))
+                res._set_count(rng.random(n) + 1)
+                res._set_error_model(containers.ErrorModel.POISSON)
+                return res
+
+            def worker(tid):
+                rng = numpy.random.default_rng(tid)
+                for i in range(500):
+                    n = (17, 97, 512, 1000)[(i + tid) % 4]
+                    out = make_result(n, rng).union(make_result(n, rng))
+                    assert out.intensity.shape == (n,)
+
+            threads = [threading.Thread(target=worker, args=(t,)) for t in range(4)]
+            for t in threads:
+                t.start()
+            for t in threads:
+                t.join()
+            """)
+        proc = subprocess.run([sys.executable, "-c", script], env=UtilsTest.get_test_env(),
+                              capture_output=True, text=True, timeout=600)
+        self.assertEqual(proc.returncode, 0, msg=f"#3003: return code {proc.returncode}\n{proc.stderr[-2000:]}")
 
 
 class TestRebin1dSector(unittest.TestCase):
