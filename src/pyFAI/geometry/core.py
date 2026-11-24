@@ -39,7 +39,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "10/11/2026"
+__date__ = "18/11/2026"
 __status__ = "production"
 __docformat__ = "restructuredtext"
 
@@ -913,7 +913,10 @@ class Geometry:
         :param do_parallax: correct for parallax effect (if parametrized)
         :return: 3D coordinates as nd-array of size (...,3) or (...,3) (default)
 
-        Nota: this value is not cached and actually generated on demand (costly)
+        Nota: this value is costly to generate. The position of the pixel centers (`corners=False`)
+        calculated with the default Cython path in double precision is cached until the geometry changes,
+        as it is the common input of all the centers arrays (2theta, chi, q, ...): do not modify it in-place.
+        The positions of the corners are four times larger and are not cached.
         """
         shape = self.get_shape(shape)
         if shape is None:
@@ -922,6 +925,13 @@ class Geometry:
                 "neither in the detector: %s",
                 self.detector,
             )
+
+        cacheable = (not corners) and use_cython and numpy.dtype(dtype) == numpy.float64
+        key = "position_center" if do_parallax else "position_center_no_parallax"
+        if cacheable:
+            cached = self._cached_array.get(key)
+            if cached is not None and cached.shape[:-1] == tuple(shape):
+                return cached
 
         pos = numpy.fromfunction(
             lambda d1, d2: self.calc_pos_zyx(
@@ -939,6 +949,8 @@ class Geometry:
         tpos = numpy.empty(outshape, dtype=dtype)
         for idx in range(3):
             tpos[..., idx] = pos[idx]
+        if cacheable:
+            self._cached_array[key] = tpos
         return tpos
 
     @deprecated

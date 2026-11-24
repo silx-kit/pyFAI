@@ -18,6 +18,8 @@ Change-log of versions
     of the experiment, and a calibrant can be used as pressure gauge or as thermometer (#2371).
     Models: Vinet, Birch-Murnaghan, Murnaghan, thermal expansion, P-V-T composite, thermal pressure (JCPDS/Dioptas) and (expanded) Mie-Grüneisen-Debye (Dorogokupets & Dewaele, 2007).
   * Read and write JCPDS (version 4) files, with the equation of state interpreted as in Dioptas, and a set of cards for Au, Pt, Rh, Re, W, Ta, Cu, Al, Fe, Al2O3, NaCl, Ne, Kr and Xe taken from the literature.
+  * `SingleGeometry.extract_cp` (automatic control points extraction) is about twice as fast on large detectors: the search for peaks no longer compares each candidate with all the peaks already found and prepares its candidates faster (#2999)
+  * `Geometry.position_array()` caches the position of the pixel centers (until the geometry changes), shared by all the centers arrays (2theta, chi, q, r...): each extra quantity saves about 0.1 s on a 6 Mpix detector, e.g. the control points extraction of the goniometer tutorial is another 10 to 15 % faster, but the memory used grows by 149 MB per geometry on such a detector. The result is shared: do not modify it in-place (#2999)
 
 - Bug fixes:
 

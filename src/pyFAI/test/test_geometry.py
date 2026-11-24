@@ -33,7 +33,7 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "17/09/2026"
+__date__ = "18/11/2026"
 
 import copy
 import itertools
@@ -1274,9 +1274,60 @@ class TestCrystFEL(unittest.TestCase):
                         self.assertEqual(obtained, expected, f"{key} matches for {i}")
 
 
+class TestPositionCache(unittest.TestCase):
+    """The position of the pixel centers is shared by all the centers arrays (2theta, chi, q, ...): #2999"""
+
+    UNITS = ("2th_rad", "chi_rad", "q_nm^-1", "r_mm", "d*2_A^-2")
+
+    def setUp(self):
+        detector = detector_factory("Imxpad S10")  # small detector makes calculation faster
+        self.geo = geometry.Geometry(detector=detector, wavelength=1e-10)
+        self.geo.setFit2D(100, detector.shape[1] // 3, detector.shape[0] // 3, tilt=1)
+
+    def tearDown(self):
+        self.geo = None
+
+    def test_cached(self):
+        pos = self.geo.position_array()
+        self.assertIs(self.geo.position_array(), pos, "position of the pixel centers is cached")
+        self.assertIsNot(self.geo.position_array(do_parallax=False), pos, "parallax correction is part of the key")
+        self.assertIsNot(self.geo.position_array(use_cython=False), pos, "Python path is not cached")
+        self.assertIsNot(self.geo.position_array(dtype=numpy.float32), pos, "single precision is not cached")
+        corners = self.geo.position_array(corners=True)
+        self.assertEqual(corners.shape, self.geo.detector.shape + (4, 3))
+        self.assertIsNot(self.geo.position_array(corners=True), corners, "corners are not cached")
+        self.assertIs(self.geo.position_array(), pos, "the pixel centers are still cached")
+
+    def test_invalidated(self):
+        pos = self.geo.position_array()
+        self.geo.dist = 0.2
+        new = self.geo.position_array()
+        self.assertIsNot(new, pos, "position recalculated after a change of the geometry")
+        self.assertGreater(abs(new[..., 0] - pos[..., 0]).max(), 0.05, "z of the pixels follows the distance")
+        self.geo.reset()
+        self.assertIsNot(self.geo.position_array(), new, "position recalculated after reset")
+        shape = (10, 20)
+        self.assertEqual(self.geo.position_array(shape).shape, shape + (3,), "position follows the shape")
+
+    def test_shared_not_modified(self):
+        """center arrays are calculated from the cached position, which must stay untouched"""
+        pos = self.geo.position_array()
+        ref = pos.copy()
+        for unit in self.UNITS:
+            ary = self.geo.center_array(unit=unit, scale=False)
+            self.assertIs(self.geo.position_array(), pos, f"position still cached after {unit}")
+            self.assertTrue(numpy.array_equal(pos, ref), f"position is not modified by {unit}")
+            # same values as the direct calculation, which does not use the cached position
+            d1, d2 = numpy.indices(ary.shape)
+            direct = {"2th_rad": self.geo.tth, "chi_rad": self.geo.chi}.get(unit)
+            if direct:
+                self.assertTrue(numpy.allclose(ary, direct(d1, d2), atol=1e-6), f"{unit} matches the direct calculation")
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
+    testsuite.addTest(loader(TestPositionCache))
     testsuite.addTest(loader(TestBugRegression))
     testsuite.addTest(loader(TestSolidAngle))
     testsuite.addTest(loader(TestRegression))

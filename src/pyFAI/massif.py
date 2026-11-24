@@ -29,10 +29,11 @@ __author__ = "Jérôme Kieffer"
 __contact__ = "Jerome.Kieffer@ESRF.eu"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "24/08/2026"
+__date__ = "18/11/2026"
 __status__ = "production"
 
 import copy
+import itertools
 import logging
 import os
 import sys
@@ -232,27 +233,40 @@ class Massif:
         res = []
         cnt = 0
         dmin2 = dmin * dmin
+        # Peaks kept are stored in a grid of cells at least as large as dmin: a peak closer than dmin
+        # to a given point is necessarily in one of the 3x3 cells around it, so there is no need to
+        # scan all the peaks already kept (the cost was quadratic with the number of peaks).
+        cell = dmin if dmin > 0 else 1.0
+        grid = {}
 
-        all_points = numpy.vstack(numpy.where(mask)).T
-        if len(all_points) > 0:
-            numpy.random.shuffle(all_points)
+        # Shuffling the flat indices is much faster than shuffling the (row, column) pairs of a large image
+        flat = numpy.flatnonzero(mask)
+        numpy.random.shuffle(flat)
+        width = mask.shape[1]
+        all_points = (divmod(i, width) for i in flat.tolist())
 
         if seed:
             seeds = numpy.array(list(seed))
             if len(seeds) > 0:
                 numpy.random.shuffle(seeds)
-            all_points = numpy.concatenate((seeds, all_points))
+            all_points = itertools.chain(map(tuple, seeds.tolist()), all_points)
 
+        debug = logger.isEnabledFor(logging.DEBUG)
         msg = "[ %3i, %3i ] -> [ %.1f, %.1f ]"
+        data = self.data
         for idx in all_points:
             out = self.nearest_peak(idx)
             if out is not None:
-
-                logger.debug(msg, idx[1], idx[0], out[1], out[0])
+                if debug:
+                    logger.debug(msg, idx[1], idx[0], out[1], out[0])
                 p0, p1 = round(out[0]), round(out[1])
-                if mask[p0, p1] and (self.data[p0, p1] > Imin) and is_far_from_group(out, res, dmin2):
-                    res.append(out)
-                    cnt = 0
+                if mask[p0, p1] and (data[p0, p1] > Imin):
+                    c0, c1 = int(out[0] // cell), int(out[1] // cell)
+                    neighbours = [peak for i in (c0 - 1, c0, c0 + 1) for j in (c1 - 1, c1, c1 + 1) for peak in grid.get((i, j), ())]
+                    if is_far_from_group(out, neighbours, dmin2):
+                        res.append(out)
+                        grid.setdefault((c0, c1), []).append(out)
+                        cnt = 0
             if len(res) >= keep or cnt > keep:
                 break
             else:
