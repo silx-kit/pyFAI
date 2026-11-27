@@ -1,5 +1,5 @@
 :Author: Jérôme Kieffer
-:Date: 30/09/2026
+:Date: 30/11/2026
 :Keywords: Tutorials
 :Target: Advanced users tutorials using jupyter notebooks
 
@@ -44,4 +44,5 @@ a good Python fluency and to a certain extent, of the pyFAI library.
    integrate2d.ipynb
    rebin.ipynb
    FiberGrazingIncidence.ipynb
+   deltaQ_demonstrator.ipynb
    Soleil/index.rst
