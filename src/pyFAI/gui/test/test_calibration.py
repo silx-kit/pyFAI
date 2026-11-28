@@ -31,7 +31,7 @@ __author__ = "Valentin Valls"
 __contact__ = "valentin.valls@esrf.fr"
 __license__ = "MIT"
 __copyright__ = "European Synchrotron Radiation Facility, Grenoble, France"
-__date__ = "29/09/2026"
+__date__ = "28/11/2026"
 
 import logging
 import unittest
@@ -45,6 +45,7 @@ import pyFAI.detectors
 import pyFAI.resources
 from pyFAI.gui.CalibrationContext import CalibrationContext
 from pyFAI.gui.CalibrationWindow import CalibrationWindow
+from pyFAI.gui.tasks.ExperimentTask import formatDetectorSizes
 
 _logger = logging.getLogger(__name__)
 
@@ -109,10 +110,34 @@ class TestCalibration(TestCaseQt):
         self.display_each_tasks(window)
 
 
+class TestFormatDetectorSizes(unittest.TestCase):
+    """Check the pretty-printed shape and pixel size of binned detectors"""
+
+    def test_without_binning(self):
+        detector = pyFAI.detectors.Detector(pixel1=1e-4, pixel2=2e-4, max_shape=(100, 200))
+        size, pixelSize = formatDetectorSizes(detector)
+        self.assertEqual(size, "100 × 200")
+        self.assertEqual(pixelSize, "100.0 × 200.0")
+
+    def test_with_binning(self):
+        detector = pyFAI.detectors.Detector(pixel1=1e-4, pixel2=2e-4, max_shape=(100, 200))
+        detector.binning = (2, 2)
+        size, pixelSize = formatDetectorSizes(detector)
+        self.assertEqual(size, "50 × 100")
+        self.assertEqual(pixelSize, "200.0 × 400.0")
+
+    def test_without_pixel_size(self):
+        detector = pyFAI.detectors.Detector(max_shape=(100, 200))
+        size, pixelSize = formatDetectorSizes(detector)
+        self.assertEqual(size, "100 × 200")
+        self.assertEqual(pixelSize, "N.A.")
+
+
 def suite():
     loader = unittest.defaultTestLoader.loadTestsFromTestCase
     testsuite = unittest.TestSuite()
     testsuite.addTest(loader(TestCalibration))
+    testsuite.addTest(loader(TestFormatDetectorSizes))
     return testsuite
 
 

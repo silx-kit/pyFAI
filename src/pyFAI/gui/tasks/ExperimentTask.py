@@ -24,9 +24,11 @@
 
 __authors__ = ["Valentin Valls", "Jérôme Kieffer"]
 __license__ = "MIT"
-__date__ = "25/08/2026"
+__date__ = "28/11/2026"
 
+import html
 import logging
+import pprint
 
 import numpy
 import silx.gui.plot
@@ -45,6 +47,45 @@ from ..utils import FilterBuilder, units, validators
 from .AbstractCalibrationTask import AbstractCalibrationTask
 
 _logger = logging.getLogger(__name__)
+
+
+def formatDetectorSizes(detector) -> tuple[str, str]:
+    """Pretty-print the detector shape and pixel size after binning.
+
+    :param detector: Detector instance, its `binning` is taken into account
+    :return: 2-tuple of strings (binned size, binned pixel size), "N.A." when unavailable
+    """
+    try:
+        shape = detector.shape
+        size = f"{shape[0]} × {shape[1]}"
+    except Exception as e:
+        # Is the detector without shape?
+        _logger.debug(e, exc_info=True)
+        size = "N.A."
+
+    try:
+        pixelSize = " × ".join(
+            f"{s * 10 ** 6:0.1f}" for s in (detector.pixel1, detector.pixel2))
+    except Exception as e:
+        # Is heterogeneous detectors have pixel size?
+        _logger.debug(e, exc_info=True)
+        pixelSize = "N.A."
+
+    return size, pixelSize
+
+
+def formatDetectorConfiguration(detector) -> str:
+    """Return the complete detector configuration for the contextual info tooltip."""
+    configuration = {
+        "class": detector.__class__.__name__,
+        "shape": detector.shape,
+        "max_shape": detector.max_shape,
+        "binning": detector.binning,
+        "pixel_size_m": (detector.pixel1, detector.pixel2),
+        "configuration": detector.get_config(),
+    }
+    details = pprint.pformat(configuration, sort_dicts=True)
+    return html.escape(details)
 
 
 class ExperimentTask(AbstractCalibrationTask):
@@ -68,6 +109,8 @@ class ExperimentTask(AbstractCalibrationTask):
         self._flatLoader.setDialogTitle("Load flat-field image")
 
         self._customDetector.clicked.connect(self.__customDetector)
+        self._detectorInfo.setIcon(
+            qt.QApplication.style().standardIcon(qt.QStyle.SP_MessageBoxInformation))
 
         self.__plot = self.__createPlot(parent=self._imageHolder)
         self.__plot.setObjectName("plot-experiment")
@@ -335,6 +378,7 @@ class ExperimentTask(AbstractCalibrationTask):
             self._detectorLabel.setStyleSheet("QLabel { color: red }")
             self._detectorSize.setText("")
             self._detectorPixelSize.setText("")
+            self._detectorInfo.setToolTip("")
             self._detectorOrientationName.setText("")
             self._detectorOrientationValue.setText("")
             self._detectorSensorLabel.setText("")
@@ -346,17 +390,7 @@ class ExperimentTask(AbstractCalibrationTask):
 
         else:
             self._detectorLabel.setStyleSheet("QLabel { }")
-            text = [str(s) for s in detector.max_shape]
-            text = " × ".join(text)
-            self._detectorSize.setText(text)
-            try:
-                text = [f"{s * 10 ** 6:0.1f}" for s in [detector.pixel1, detector.pixel2]]
-                text = " × ".join(text)
-            except Exception as e:
-                # Is heterogeneous detectors have pixel size?
-                _logger.debug(e, exc_info=True)
-                text = "N.A."
-            self._detectorPixelSize.setText(text)
+            self.__setDetectorSizeTexts(detector)
             self._detectorOrientationName.setText(detector.orientation.name)
             self._detectorOrientationValue.setText(f"({detector.orientation.value})")
             if detector.sensor:
@@ -386,6 +420,17 @@ class ExperimentTask(AbstractCalibrationTask):
 
         self.__updateDetector()
 
+    def __setDetectorSizeTexts(self, detector):
+        """Display binned size and pixel size, with full details in an info tooltip.
+
+        :param detector: Detector whose `binning` is already up-to-date with the image
+        """
+        size, pixelSize = formatDetectorSizes(detector)
+        self._detectorSize.setText(size)
+        self._detectorPixelSize.setText(pixelSize)
+        details = formatDetectorConfiguration(detector)
+        self._detectorInfo.setToolTip(f"<b>Detector configuration</b><br><pre>{details}</pre>")
+
     def __displayError(self, label, message=""):
         self._error.setVisible(True)
         self._binning.setVisible(False)
@@ -403,6 +448,7 @@ class ExperimentTask(AbstractCalibrationTask):
         if detector is None:
             self._detectorSize.setText("")
             self._detectorPixelSize.setText("")
+            self._detectorInfo.setToolTip("")
             self.__plot.removeMarker("xmin")
             self.__plot.removeMarker("xmax")
             self.__plot.removeMarker("ymin")
@@ -450,6 +496,7 @@ class ExperimentTask(AbstractCalibrationTask):
         self._detectorSizeUnit.setVisible(detector is not None)
         self.__updateDetectorTemplate()
         if detector.guess_binning(image):
+            self.__setDetectorSizeTexts(detector)
             text = [str(s) for s in binning]
             text = " × ".join(text)
             self._binning.setText(text)

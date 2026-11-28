@@ -171,7 +171,7 @@
          <property name="title">
           <string>Detector</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_3" columnstretch="0,1,0">
+         <layout class="QGridLayout" name="gridLayout_3" columnstretch="0,1,0,0">
           <item row="0" column="0">
            <widget class="QLabel" name="label_9">
             <property name="text">
@@ -222,7 +222,7 @@
           <item row="2" column="0">
            <widget class="QLabel" name="_detectorSizeLabel">
             <property name="toolTip">
-             <string>Detector size without binning</string>
+             <string>Detector shape after binning (max_shape without binning)</string>
             </property>
             <property name="text">
              <string>Size (h×w):</string>
@@ -249,7 +249,7 @@
           <item row="3" column="0">
            <widget class="QLabel" name="_detectorPixelSizeLabel">
             <property name="toolTip">
-             <string>Detector pixel size without binning</string>
+             <string>Detector pixel size without binning (binned pixel size in parenthesis)</string>
             </property>
             <property name="text">
              <string>Pixel size (h×w):</string>
@@ -270,6 +270,16 @@
            <widget class="QLabel" name="_detectorPixelSizeUnit">
             <property name="text">
              <string>µm</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="3" rowspan="2">
+           <widget class="QToolButton" name="_detectorInfo">
+            <property name="autoRaise">
+             <bool>true</bool>
+            </property>
+            <property name="toolTip">
+             <string>Show complete detector configuration</string>
             </property>
            </widget>
           </item>
